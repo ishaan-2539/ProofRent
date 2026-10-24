@@ -1,0 +1,242 @@
+{
+  "report_id": "report_match",
+  "status": "completed",
+  "created_at": "2026-10-24T14:10:00Z",
+  "captured_at": "2026-10-24T14:10:00Z",
+  "is_cached": false,
+  "is_replay": true,
+  "replay_label": "Recorded run, 24 Oct 14:10",
+  "input_url": "https://gopgo.in/listing/aggarwal-pg-govindpuri",
+  "portal": "gopgo",
+  "listing": {
+    "listing_id": "aggarwal_gopgo",
+    "source": {
+      "url": "https://gopgo.in/listing/aggarwal-pg-govindpuri",
+      "portal": "gopgo",
+      "captured_at": "2026-10-24T14:10:00Z",
+      "snapshot_id": "snap_001"
+    },
+    "portal": "gopgo",
+    "status": "live",
+    "title": {"value": "Aggarwal PG Govindpuri", "passage": "Aggarwal PG Govindpuri"},
+    "operator_name": {"value": "Aggarwal PG", "passage": "Managed by Aggarwal PG"},
+    "address_text": {"value": "Pocket A, Govindpuri, Kalkaji, New Delhi", "passage": "Pocket A, Govindpuri, Kalkaji, New Delhi"},
+    "locality": {"value": "Govindpuri", "passage": "Govindpuri"},
+    "description": {"value": "Clean double sharing PG near IIIT Delhi.", "passage": "Clean double sharing PG near IIIT Delhi."},
+    "gender_policy": {"value": "boys", "passage": "Boys only"},
+    "food_plan": {"value": "included", "passage": "3 meals included"},
+    "furnishing": {"value": "furnished", "passage": "Fully furnished"},
+    "floor": {"value": "2nd floor", "passage": "2nd floor"},
+    "lat": 28.5435,
+    "lng": 77.2612,
+    "rent_options": [
+      {
+        "sharing_type": "double",
+        "ac": true,
+        "monthly_rent": 8000,
+        "per_bed_stated": true,
+        "passage": "Double sharing AC room: Rs 8000 per bed"
+      }
+    ],
+    "deposit_amount": {"value": 8000, "passage": "Security deposit: Rs 8000"},
+    "deposit_months": {"value": 1, "passage": "1 month deposit"},
+    "maintenance_monthly": {"value": 0, "passage": "No maintenance fee"},
+    "electricity_terms": {"value": "as per usage", "passage": "Electricity as per meter"},
+    "electricity_monthly": {"value": null, "passage": null},
+    "ac_charge_monthly": {"value": null, "passage": null},
+    "food_charge_monthly": {"value": null, "passage": null},
+    "brokerage_amount": {"value": 0, "passage": "Zero brokerage"},
+    "brokerage_months": {"value": 0, "passage": "Zero brokerage"},
+    "notice_period_days": {"value": 30, "passage": "30 days notice required"},
+    "lock_in_months": {"value": 1, "passage": "1 month lock-in"},
+    "amenities": ["WiFi", "RO Water", "AC"],
+    "photo_urls": [],
+    "posted_on": "2026-10-20"
+  },
+  "matching": {
+    "status": "match_found",
+    "candidates": [
+      {
+        "candidate_id": "cand_001",
+        "listing": {
+          "listing_id": "aggarwal_mb",
+          "source": {
+            "url": "https://magicbricks.com/pg-in-govindpuri-new-delhi",
+            "portal": "magicbricks",
+            "captured_at": "2026-10-24T14:10:00Z",
+            "snapshot_id": "snap_002"
+          },
+          "portal": "magicbricks",
+          "status": "live",
+          "title": {"value": "Aggarwal PG for Boys", "passage": "Aggarwal PG for Boys"},
+          "operator_name": {"value": "Aggarwal PG", "passage": "Aggarwal PG"},
+          "address_text": {"value": "Pocket A, Govindpuri", "passage": "Pocket A, Govindpuri"},
+          "locality": {"value": "Govindpuri", "passage": "Govindpuri"},
+          "description": {"value": "Clean double sharing PG near IIIT Delhi.", "passage": "Clean double sharing PG near IIIT Delhi."},
+          "gender_policy": {"value": "boys", "passage": "Boys only"},
+          "food_plan": {"value": "included", "passage": "3 meals included"},
+          "furnishing": {"value": "furnished", "passage": "Fully furnished"},
+          "floor": {"value": "2nd floor", "passage": "2nd floor"},
+          "lat": 28.5436,
+          "lng": 77.2613,
+          "rent_options": [
+            {
+              "sharing_type": "double",
+              "ac": true,
+              "monthly_rent": 7500,
+              "per_bed_stated": true,
+              "passage": "Rs 7500 / month per bed"
+            }
+          ],
+          "deposit_amount": {"value": 7500, "passage": "Deposit: 7500"},
+          "deposit_months": {"value": 1, "passage": "1 month deposit"},
+          "maintenance_monthly": {"value": 0, "passage": "No maintenance"},
+          "electricity_terms": {"value": "included", "passage": "Electricity included"},
+          "electricity_monthly": {"value": null, "passage": null},
+          "ac_charge_monthly": {"value": null, "passage": null},
+          "food_charge_monthly": {"value": null, "passage": null},
+          "brokerage_amount": {"value": 0, "passage": "No brokerage"},
+          "brokerage_months": {"value": 0, "passage": "Zero brokerage"},
+          "notice_period_days": {"value": 30, "passage": "30 days notice"},
+          "lock_in_months": {"value": 1, "passage": "1 month lock-in"},
+          "amenities": ["WiFi", "AC"],
+          "photo_urls": [],
+          "posted_on": "2026-10-18"
+        },
+        "scope": "same_place",
+        "match_level": "match",
+        "confidence": "high",
+        "method": "Map pins 15 m apart, same operator name, identical description text",
+        "families": [
+          {"family": "location", "agreed": true, "detail": "Pins 15 m apart in Govindpuri"},
+          {"family": "identity", "agreed": true, "detail": "Both listed under Aggarwal PG"},
+          {"family": "content", "agreed": true, "detail": "Shared sentence matches word-for-word"}
+        ],
+        "shared_sentences": ["Clean double sharing PG near IIIT Delhi."],
+        "distance_m": 15.0,
+        "price_gaps": [
+          {
+            "sharing_type": "double",
+            "ac": true,
+            "rent_here": 8000,
+            "rent_there": 7500,
+            "difference": -500,
+            "comparable": true,
+            "note": "Magicbricks lists the same bed for ₹500/month less."
+          }
+        ],
+        "alternative_explanations": ["Listed on multiple portals with slightly stale pricing."],
+        "user_decision": null
+      }
+    ],
+    "portals_checked": [
+      {"portal": "magicbricks", "status": "checked", "listings_seen": 1, "note": "Match found", "url": "https://magicbricks.com/pg-in-govindpuri-new-delhi"},
+      {"portal": "pgdekho", "status": "checked", "listings_seen": 0, "note": "No listing found", "url": null}
+    ],
+    "nearby_listings_count": 2,
+    "message": "Found 1 matching listing on Magicbricks with a ₹500 price gap."
+  },
+  "cost": {
+    "status": "ok",
+    "rent_option_index": 0,
+    "sharing_type": "double",
+    "lines": [
+      {
+        "key": "rent",
+        "title": "Monthly Rent",
+        "label": "listed",
+        "recurrence": "monthly",
+        "amount_min": 8000,
+        "amount_max": 8000,
+        "source": {
+          "url": "https://gopgo.in/listing/aggarwal-pg-govindpuri",
+          "portal": "gopgo",
+          "captured_at": "2026-10-24T14:10:00Z",
+          "snapshot_id": "snap_001"
+        },
+        "passage": "Double sharing AC room: Rs 8000 per bed",
+        "assumption_text": null,
+        "question": null,
+        "display_value": null
+      },
+      {
+        "key": "deposit",
+        "title": "Security Deposit",
+        "label": "listed",
+        "recurrence": "one_time",
+        "amount_min": 8000,
+        "amount_max": 8000,
+        "source": {
+          "url": "https://gopgo.in/listing/aggarwal-pg-govindpuri",
+          "portal": "gopgo",
+          "captured_at": "2026-10-24T14:10:00Z",
+          "snapshot_id": "snap_001"
+        },
+        "passage": "Security deposit: Rs 8000",
+        "assumption_text": null,
+        "question": null,
+        "display_value": null
+      },
+      {
+        "key": "electricity",
+        "title": "Electricity",
+        "label": "unknown",
+        "recurrence": "monthly",
+        "amount_min": null,
+        "amount_max": null,
+        "source": null,
+        "passage": "Electricity as per meter",
+        "assumption_text": null,
+        "question": "How is electricity billed (metered, per-unit rate, or fixed)?",
+        "display_value": "Metered (as per usage)"
+      }
+    ],
+    "monthly_min": 8000,
+    "monthly_max": null,
+    "move_in_min": 16000,
+    "move_in_max": null,
+    "unknown_count": 1,
+    "headline": "At least ₹8,000, with 1 unknown"
+  },
+  "fair_price": {
+    "status": "ok",
+    "comparable_count": 6,
+    "sharing_type": "double",
+    "median_rent": 8000,
+    "listing_rent": 8000,
+    "position": "near",
+    "message": "Rent matches median of ₹8,000 among 6 comparable double-sharing listings found."
+  },
+  "questions": [
+    {
+      "question_id": "q1",
+      "text": "How is electricity billed (metered, per-unit rate, or fixed)?",
+      "finding_id": "find_002",
+      "is_default": false
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "find_001",
+      "kind": "same_place",
+      "what_we_saw": "Aggarwal PG is listed on Magicbricks for ₹7,500/month (₹500 less than GoPGo).",
+      "sources": [
+        {"url": "https://gopgo.in/listing/aggarwal-pg-govindpuri", "portal": "gopgo", "captured_at": "2026-10-24T14:10:00Z", "snapshot_id": "snap_001"},
+        {"url": "https://magicbricks.com/pg-in-govindpuri-new-delhi", "portal": "magicbricks", "captured_at": "2026-10-24T14:10:00Z", "snapshot_id": "snap_002"}
+      ],
+      "how_we_matched": "Map pins 15 m apart and matching name",
+      "confidence": "high",
+      "other_explanations": ["Listed on multiple portals with different rates"],
+      "label": "verified",
+      "question": null
+    }
+  ],
+  "modules": [
+    {"name": "listing", "status": "success", "message": null, "next_step": null},
+    {"name": "matching", "status": "success", "message": null, "next_step": null},
+    {"name": "cost", "status": "success", "message": null, "next_step": null},
+    {"name": "fair_price", "status": "success", "message": null, "next_step": null},
+    {"name": "questions", "status": "success", "message": null, "next_step": null}
+  ],
+  "share_path": "/report/report_match"
+}

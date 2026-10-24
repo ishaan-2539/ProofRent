@@ -1,0 +1,9 @@
+[
+  {"report_id": "report_no_match", "type": "started", "ts": "2026-10-24T14:15:00Z", "message": "Starting investigation for Kalkaji PG"},
+  {"report_id": "report_no_match", "type": "module_ready", "ts": "2026-10-24T14:15:03Z", "message": "Extracted listing details", "module": "listing"},
+  {"report_id": "report_no_match", "type": "module_ready", "ts": "2026-10-24T14:15:10Z", "message": "No matching listings found on other portals", "module": "matching"},
+  {"report_id": "report_no_match", "type": "module_ready", "ts": "2026-10-24T14:15:12Z", "message": "Calculated real cost breakdown", "module": "cost"},
+  {"report_id": "report_no_match", "type": "module_ready", "ts": "2026-10-24T14:15:14Z", "message": "Insufficient comparison data", "module": "fair_price"},
+  {"report_id": "report_no_match", "type": "module_ready", "ts": "2026-10-24T14:15:15Z", "message": "Prepared standard question list", "module": "questions"},
+  {"report_id": "report_no_match", "type": "completed", "ts": "2026-10-24T14:15:16Z", "message": "Investigation complete"}
+]

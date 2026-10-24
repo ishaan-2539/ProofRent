@@ -1,0 +1,134 @@
+{
+  "report_id": "report_no_match",
+  "status": "completed",
+  "created_at": "2026-10-24T14:15:00Z",
+  "captured_at": "2026-10-24T14:15:00Z",
+  "is_cached": false,
+  "is_replay": true,
+  "replay_label": "Recorded run, 24 Oct 14:15",
+  "input_url": "https://nobroker.in/property/pg-in-kalkaji",
+  "portal": "nobroker",
+  "listing": {
+    "listing_id": "kalkaji_nobroker",
+    "source": {
+      "url": "https://nobroker.in/property/pg-in-kalkaji",
+      "portal": "nobroker",
+      "captured_at": "2026-10-24T14:15:00Z",
+      "snapshot_id": "snap_003"
+    },
+    "portal": "nobroker",
+    "status": "live",
+    "title": {"value": "Single Room PG in Kalkaji", "passage": "Single Room PG in Kalkaji"},
+    "operator_name": {"value": null, "passage": null},
+    "address_text": {"value": "Kalkaji Main Road, Delhi", "passage": "Kalkaji Main Road, Delhi"},
+    "locality": {"value": "Kalkaji", "passage": "Kalkaji"},
+    "description": {"value": "Independent quiet PG room.", "passage": "Independent quiet PG room."},
+    "gender_policy": {"value": "any", "passage": "Open for all"},
+    "food_plan": {"value": "not_included", "passage": "Food not provided"},
+    "furnishing": {"value": "semi_furnished", "passage": "Semi furnished"},
+    "floor": {"value": "1st floor", "passage": "1st floor"},
+    "lat": null,
+    "lng": null,
+    "rent_options": [
+      {
+        "sharing_type": "single",
+        "ac": false,
+        "monthly_rent": 11000,
+        "per_bed_stated": true,
+        "passage": "Rs 11000 per month"
+      }
+    ],
+    "deposit_amount": {"value": 11000, "passage": "1 month deposit"},
+    "deposit_months": {"value": 1, "passage": "1 month deposit"},
+    "maintenance_monthly": {"value": 500, "passage": "Rs 500 maintenance"},
+    "electricity_terms": {"value": "as per usage", "passage": "Electricity extra"},
+    "electricity_monthly": {"value": null, "passage": null},
+    "ac_charge_monthly": {"value": null, "passage": null},
+    "food_charge_monthly": {"value": null, "passage": null},
+    "brokerage_amount": {"value": 0, "passage": "Zero brokerage"},
+    "brokerage_months": {"value": 0, "passage": "Zero brokerage"},
+    "notice_period_days": {"value": 30, "passage": "30 days notice"},
+    "lock_in_months": {"value": 0, "passage": "No lock in"},
+    "amenities": ["WiFi"],
+    "photo_urls": [],
+    "posted_on": "2026-10-22"
+  },
+  "matching": {
+    "status": "no_match",
+    "candidates": [],
+    "portals_checked": [
+      {"portal": "magicbricks", "status": "checked", "listings_seen": 0, "note": "No matching listings found", "url": null},
+      {"portal": "housing", "status": "checked", "listings_seen": 0, "note": "No matching listings found", "url": null}
+    ],
+    "nearby_listings_count": 0,
+    "message": "No other listings found for this property across checked portals."
+  },
+  "cost": {
+    "status": "ok",
+    "rent_option_index": 0,
+    "sharing_type": "single",
+    "lines": [
+      {
+        "key": "rent",
+        "title": "Monthly Rent",
+        "label": "listed",
+        "recurrence": "monthly",
+        "amount_min": 11000,
+        "amount_max": 11000,
+        "source": {
+          "url": "https://nobroker.in/property/pg-in-kalkaji",
+          "portal": "nobroker",
+          "captured_at": "2026-10-24T14:15:00Z",
+          "snapshot_id": "snap_003"
+        },
+        "passage": "Rs 11000 per month",
+        "assumption_text": null,
+        "question": null,
+        "display_value": null
+      },
+      {
+        "key": "maintenance",
+        "title": "Maintenance",
+        "label": "listed",
+        "recurrence": "monthly",
+        "amount_min": 500,
+        "amount_max": 500,
+        "source": {
+          "url": "https://nobroker.in/property/pg-in-kalkaji",
+          "portal": "nobroker",
+          "captured_at": "2026-10-24T14:15:00Z",
+          "snapshot_id": "snap_003"
+        },
+        "passage": "Rs 500 maintenance",
+        "assumption_text": null,
+        "question": null,
+        "display_value": null
+      }
+    ],
+    "monthly_min": 11500,
+    "monthly_max": 11500,
+    "move_in_min": 22500,
+    "move_in_max": 22500,
+    "unknown_count": 0,
+    "headline": "Estimated ₹11,500/month"
+  },
+  "fair_price": {
+    "status": "not_enough_data",
+    "comparable_count": 2,
+    "sharing_type": "single",
+    "median_rent": null,
+    "listing_rent": 11000,
+    "position": null,
+    "message": "Found only 2 comparable listings, not enough to assess fair price."
+  },
+  "questions": [],
+  "findings": [],
+  "modules": [
+    {"name": "listing", "status": "success", "message": null, "next_step": null},
+    {"name": "matching", "status": "empty", "message": "No matching listings found on other portals.", "next_step": null},
+    {"name": "cost", "status": "success", "message": null, "next_step": null},
+    {"name": "fair_price", "status": "partial", "message": "Insufficient comparison data.", "next_step": null},
+    {"name": "questions", "status": "empty", "message": null, "next_step": null}
+  ],
+  "share_path": "/report/report_no_match"
+}

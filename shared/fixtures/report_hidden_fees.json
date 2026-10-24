@@ -1,0 +1,217 @@
+{
+  "report_id": "report_hidden_fees",
+  "status": "completed",
+  "created_at": "2026-10-24T14:20:00Z",
+  "captured_at": "2026-10-24T14:20:00Z",
+  "is_cached": false,
+  "is_replay": true,
+  "replay_label": "Recorded run, 24 Oct 14:20",
+  "input_url": "https://housing.com/in/buy/resale/page/102938",
+  "portal": "housing",
+  "listing": {
+    "listing_id": "mathur_housing",
+    "source": {
+      "url": "https://housing.com/in/buy/resale/page/102938",
+      "portal": "housing",
+      "captured_at": "2026-10-24T14:20:00Z",
+      "snapshot_id": "snap_004"
+    },
+    "portal": "housing",
+    "status": "live",
+    "title": {"value": "Mathur PG House", "passage": "Mathur PG House"},
+    "operator_name": {"value": "Mathur PG", "passage": "Mathur PG"},
+    "address_text": {"value": "Okhla Phase 3, Delhi", "passage": "Okhla Phase 3, Delhi"},
+    "locality": {"value": "Okhla", "passage": "Okhla"},
+    "description": {"value": "Stated rent Rs 9000. Food mandatory extra Rs 2500. Maintenance Rs 1000.", "passage": "Stated rent Rs 9000. Food mandatory extra Rs 2500. Maintenance Rs 1000."},
+    "gender_policy": {"value": "girls", "passage": "Girls only"},
+    "food_plan": {"value": "mandatory_extra", "passage": "Food mandatory extra Rs 2500"},
+    "furnishing": {"value": "furnished", "passage": "Furnished"},
+    "floor": {"value": "Ground floor", "passage": "Ground floor"},
+    "lat": null,
+    "lng": null,
+    "rent_options": [
+      {
+        "sharing_type": "double",
+        "ac": true,
+        "monthly_rent": 9000,
+        "per_bed_stated": true,
+        "passage": "Stated rent Rs 9000"
+      }
+    ],
+    "deposit_amount": {"value": 9000, "passage": "Deposit: Rs 9000"},
+    "deposit_months": {"value": 1, "passage": "1 month deposit"},
+    "maintenance_monthly": {"value": 1000, "passage": "Maintenance Rs 1000"},
+    "electricity_terms": {"value": "metered", "passage": "Electricity as per meter"},
+    "electricity_monthly": {"value": null, "passage": null},
+    "ac_charge_monthly": {"value": null, "passage": null},
+    "food_charge_monthly": {"value": 2500, "passage": "Food mandatory extra Rs 2500"},
+    "brokerage_amount": {"value": null, "passage": null},
+    "brokerage_months": {"value": null, "passage": null},
+    "notice_period_days": {"value": null, "passage": null},
+    "lock_in_months": {"value": null, "passage": null},
+    "amenities": ["WiFi", "Food"],
+    "photo_urls": [],
+    "posted_on": "2026-10-21"
+  },
+  "matching": {
+    "status": "no_match",
+    "candidates": [],
+    "portals_checked": [
+      {"portal": "magicbricks", "status": "checked", "listings_seen": 0, "note": "No match", "url": null}
+    ],
+    "nearby_listings_count": 0,
+    "message": "No matches found on other portals."
+  },
+  "cost": {
+    "status": "ok",
+    "rent_option_index": 0,
+    "sharing_type": "double",
+    "lines": [
+      {
+        "key": "rent",
+        "title": "Stated Rent",
+        "label": "listed",
+        "recurrence": "monthly",
+        "amount_min": 9000,
+        "amount_max": 9000,
+        "source": {
+          "url": "https://housing.com/in/buy/resale/page/102938",
+          "portal": "housing",
+          "captured_at": "2026-10-24T14:20:00Z",
+          "snapshot_id": "snap_004"
+        },
+        "passage": "Stated rent Rs 9000",
+        "assumption_text": null,
+        "question": null,
+        "display_value": null
+      },
+      {
+        "key": "food",
+        "title": "Mandatory Food Fee",
+        "label": "listed",
+        "recurrence": "monthly",
+        "amount_min": 2500,
+        "amount_max": 2500,
+        "source": {
+          "url": "https://housing.com/in/buy/resale/page/102938",
+          "portal": "housing",
+          "captured_at": "2026-10-24T14:20:00Z",
+          "snapshot_id": "snap_004"
+        },
+        "passage": "Food mandatory extra Rs 2500",
+        "assumption_text": null,
+        "question": null,
+        "display_value": null
+      },
+      {
+        "key": "maintenance",
+        "title": "Maintenance",
+        "label": "listed",
+        "recurrence": "monthly",
+        "amount_min": 1000,
+        "amount_max": 1000,
+        "source": {
+          "url": "https://housing.com/in/buy/resale/page/102938",
+          "portal": "housing",
+          "captured_at": "2026-10-24T14:20:00Z",
+          "snapshot_id": "snap_004"
+        },
+        "passage": "Maintenance Rs 1000",
+        "assumption_text": null,
+        "question": null,
+        "display_value": null
+      },
+      {
+        "key": "brokerage",
+        "title": "Brokerage Fee",
+        "label": "assumed",
+        "recurrence": "one_time",
+        "amount_min": 0,
+        "amount_max": 9000,
+        "source": null,
+        "passage": null,
+        "assumption_text": "Brokerage assumed between 0 and 1 month's rent unless the listing says otherwise.",
+        "question": null,
+        "display_value": null
+      },
+      {
+        "key": "electricity",
+        "title": "Electricity",
+        "label": "unknown",
+        "recurrence": "monthly",
+        "amount_min": null,
+        "amount_max": null,
+        "source": null,
+        "passage": "Electricity as per meter",
+        "assumption_text": null,
+        "question": "How is electricity billed (metered, per-unit rate, or fixed)?",
+        "display_value": null
+      },
+      {
+        "key": "notice_period",
+        "title": "Notice Period",
+        "label": "unknown",
+        "recurrence": "terms",
+        "amount_min": null,
+        "amount_max": null,
+        "source": null,
+        "passage": null,
+        "assumption_text": null,
+        "question": "What is the notice period, and is any rent forfeited?",
+        "display_value": null
+      }
+    ],
+    "monthly_min": 12500,
+    "monthly_max": null,
+    "move_in_min": 21500,
+    "move_in_max": null,
+    "unknown_count": 2,
+    "headline": "At least ₹12,500, with 2 unknown"
+  },
+  "fair_price": {
+    "status": "ok",
+    "comparable_count": 5,
+    "sharing_type": "double",
+    "median_rent": 12000,
+    "listing_rent": 12500,
+    "position": "near",
+    "message": "Total cost ₹12,500 is near the median ₹12,000 of 5 comparable listings found."
+  },
+  "questions": [
+    {
+      "question_id": "q1",
+      "text": "How is electricity billed (metered, per-unit rate, or fixed)?",
+      "finding_id": null,
+      "is_default": true
+    },
+    {
+      "question_id": "q2",
+      "text": "What is the notice period, and is any rent forfeited?",
+      "finding_id": null,
+      "is_default": true
+    }
+  ],
+  "findings": [
+    {
+      "finding_id": "find_002",
+      "kind": "cost",
+      "what_we_saw": "Stated rent is ₹9,000, but compulsory food (₹2,500) and maintenance (₹1,000) bring base monthly cost to ₹12,500.",
+      "sources": [
+        {"url": "https://housing.com/in/buy/resale/page/102938", "portal": "housing", "captured_at": "2026-10-24T14:20:00Z", "snapshot_id": "snap_004"}
+      ],
+      "how_we_matched": null,
+      "confidence": null,
+      "other_explanations": [],
+      "label": "verified",
+      "question": null
+    }
+  ],
+  "modules": [
+    {"name": "listing", "status": "success", "message": null, "next_step": null},
+    {"name": "matching", "status": "empty", "message": null, "next_step": null},
+    {"name": "cost", "status": "success", "message": null, "next_step": null},
+    {"name": "fair_price", "status": "success", "message": null, "next_step": null},
+    {"name": "questions", "status": "success", "message": null, "next_step": null}
+  ],
+  "share_path": "/report/report_hidden_fees"
+}
