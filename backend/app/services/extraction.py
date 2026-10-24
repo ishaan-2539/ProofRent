@@ -28,7 +28,6 @@ INT_FIELDS = [
 ]
 ALL_FIELDS = STRING_FIELDS + INT_FIELDS
 
-# Kept for the contract / tests: nullable schema (type arrays would be HTTP 400 on TinyFish).
 EXTRACTION_SCHEMA: dict = {
     "type": "object",
     "properties": {
@@ -36,6 +35,7 @@ EXTRACTION_SCHEMA: dict = {
         **{f: {"type": "integer", "nullable": True} for f in INT_FIELDS},
         **{f"{f}_passage": {"type": "string", "nullable": True} for f in ALL_FIELDS},
         "amenities": {"type": "array", "items": {"type": "string"}},
+        "photo_urls": {"type": "array", "items": {"type": "string"}},
         "rent_options": {
             "type": "array",
             "items": {
@@ -54,7 +54,6 @@ EXTRACTION_SCHEMA: dict = {
 
 
 def _template() -> str:
-    """A literal JSON skeleton so the model uses EXACTLY our key names."""
     skeleton: dict = {}
     for f in STRING_FIELDS:
         skeleton[f] = None
@@ -63,6 +62,7 @@ def _template() -> str:
         skeleton[f] = None
         skeleton[f"{f}_passage"] = None
     skeleton["amenities"] = []
+    skeleton["photo_urls"] = []
     skeleton["rent_options"] = [
         {"sharing_type": "single|double|triple|quad|other", "ac": None,
          "monthly_rent": None, "per_bed_stated": None, "passage": None}
@@ -78,6 +78,7 @@ def build_extraction_prompt(page_text: str) -> Tuple[str, str]:
         "Rules:\n"
         "- For every value you fill, also fill '<key>_passage' with the exact text copied "
         "VERBATIM from the page that contains that value (short, one line is best).\n"
+        "- If photo URLs are present in markdown or text, include up to 4 image links in photo_urls.\n"
         "- If something is not on the page, leave it null (and its passage null). Never guess, "
         "never use 0 for 'unknown'.\n"
         "- Money fields are integers in rupees ('₹6,500' -> 6500, '8K' -> 8000).\n"
@@ -95,7 +96,6 @@ def build_extraction_prompt(page_text: str) -> Tuple[str, str]:
 
 
 def _norm(s: str) -> str:
-    """Case, whitespace and markdown-insensitive form used for passage checks."""
     s = re.sub(r"[*#_`|>]", " ", s.lower())
     return " ".join(s.split())
 
@@ -107,7 +107,6 @@ def verify_passage(passage: Optional[str], page_text: str) -> bool:
 
 
 def drop_unverified(listing: ListingFields, page_text: str) -> ListingFields:
-    """A value whose quoted passage is not in the page text is dropped (becomes Unknown)."""
     for field_name in ALL_FIELDS:
         ev: ExtractedValue = getattr(listing, field_name)
         if ev.value is not None and not verify_passage(ev.passage, page_text):
@@ -132,10 +131,11 @@ def merge_listing_fields(base: ListingFields, extra: ListingFields) -> ListingFi
         base.rent_options = extra.rent_options
     if not base.amenities and extra.amenities:
         base.amenities = extra.amenities
+    if not base.photo_urls and extra.photo_urls:
+        base.photo_urls = extra.photo_urls
     return base
 
 
-# ------------------------------------------------------------------ coercion helpers
 def to_int(v: Any) -> Optional[int]:
     if v is None or isinstance(v, bool):
         return None
@@ -186,13 +186,28 @@ def _make_ev(data: dict, key: str) -> ExtractedValue:
     if key in INT_FIELDS:
         n = to_int(raw)
         if n is not None and key == "notice_period_days" and "month" in str(raw).lower():
-            n *= 30  # '1 Month' -> 30 days
+            n *= 30
         return ExtractedValue(value=n, passage=passage) if n is not None else ExtractedValue()
     return ExtractedValue(value=str(raw), passage=passage)
 
 
 def _stable_id(url: str) -> str:
     return "list_" + hashlib.md5(url.encode()).hexdigest()[:10]
+
+
+def _extract_fallback_photos(text: str) -> list[str]:
+    """Find image URLs embedded in markdown/HTML page text."""
+    pattern = r"https?://[^\s\"'\)]+\.(?:jpg|jpeg|png|webp)(?:\?[^\s\"'\)]*)?"
+    matches = re.findall(pattern, text, flags=re.IGNORECASE)
+    seen = set()
+    photos = []
+    for m in matches:
+        if m not in seen:
+            seen.add(m)
+            photos.append(m)
+            if len(photos) >= 4:
+                break
+    return photos
 
 
 async def extract_listing_fields(page: CapturedPage) -> ListingFields:
@@ -209,36 +224,4 @@ async def extract_listing_fields(page: CapturedPage) -> ListingFields:
         return base
 
     llm = get_llm_client()
-    sys_prompt, user_prompt = build_extraction_prompt(page.text)
-    # Errors propagate on purpose: run_module shows the real reason in the UI.
-    data = await llm.extract_json(sys_prompt, user_prompt, EXTRACTION_SCHEMA)
-
-    rent_opts = []
-    for ro in data.get("rent_options") or []:
-        if not isinstance(ro, dict):
-            continue
-        rent = to_int(ro.get("monthly_rent"))
-        if rent is None:
-            continue
-        rent_opts.append(
-            RentOption(
-                sharing_type=normalize_sharing(ro.get("sharing_type")),
-                ac=to_bool(ro.get("ac")),
-                monthly_rent=rent,
-                per_bed_stated=to_bool(ro.get("per_bed_stated")),
-                passage=(str(ro["passage"]) if ro.get("passage") else None),
-            )
-        )
-
-    amenities = [str(a) for a in (data.get("amenities") or []) if a]
-
-    listing = ListingFields(
-        listing_id=base.listing_id,
-        source=source,
-        portal=base.portal,
-        status="live",
-        rent_options=rent_opts,
-        amenities=amenities,
-        **{f: _make_ev(data, f) for f in ALL_FIELDS},
-    )
-    return drop_unverified(listing, page.text)
+    sys_prompt, user_prompt = build
