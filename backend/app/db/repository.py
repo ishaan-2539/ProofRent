@@ -9,7 +9,6 @@ from app.schemas import CapturedPage, Report, UserDecision
 def mask_phone_numbers(text: str) -> str:
     if not text:
         return text
-    # Mask Indian 10-digit phone numbers and common phone formats
     return re.sub(r"(\+?91[\-\s]?)?[6-9]\d{9}", "[MASKED PHONE]", text)
 
 
@@ -115,13 +114,27 @@ def find_report_by_url(url: str) -> Optional[Report]:
 
 def save_decision(report_id: str, candidate_id: str, decision: UserDecision) -> Report:
     report = get_report(report_id)
-    if not report or not report.matching:
-        raise ValueError(f"Report {report_id} not found or has no matching data")
 
+    if not report:
+        from app.services.orchestrator import get_report_by_id
+        report = get_report_by_id(report_id)
+
+    if not report or not report.matching:
+        raise ValueError(f"Report '{report_id}' not found or has no matching data.")
+
+    found = False
     for candidate in report.matching.candidates:
         if candidate.candidate_id == candidate_id:
             candidate.user_decision = decision
+            found = True
             break
 
+    if not found:
+        raise ValueError(f"Candidate '{candidate_id}' not found in report '{report_id}'.")
+
     save_report(report)
+
+    from app.services.orchestrator import sync_cached_report
+    sync_cached_report(report)
+
     return report

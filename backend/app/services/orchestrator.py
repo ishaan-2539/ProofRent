@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 from typing import Awaitable, Callable, Optional
 
 from app.core.constants import get_threshold
+from app.core.errors import ProofRentError
+from app.db import repository
 from app.schemas import (
     Report,
     ListingFields,
@@ -23,8 +25,12 @@ from app.services.capture import capture_page, capture_pages
 from app.services.discovery import discover_candidate_urls
 from app.services.matching import find_matches
 
-# In-memory storage cache fallback until database repository is fully wired by Asmi
 _REPORTS_CACHE: dict[str, Report] = {}
+
+
+def sync_cached_report(report: Report) -> None:
+    """Synchronize an updated report instance into the in-memory cache."""
+    _REPORTS_CACHE[report.report_id] = report
 
 
 def get_cached_report_by_url(url: str) -> Optional[Report]:
@@ -32,12 +38,20 @@ def get_cached_report_by_url(url: str) -> Optional[Report]:
     for report in _REPORTS_CACHE.values():
         if report.input_url == url:
             return report
-    return None
+    return repository.find_report_by_url(url)
 
 
 def get_report_by_id(report_id: str) -> Optional[Report]:
-    """Retrieve report object by report_id."""
-    return _REPORTS_CACHE.get(report_id)
+    """Retrieve report object by report_id from memory or SQLite storage."""
+    if report_id in _REPORTS_CACHE:
+        return _REPORTS_CACHE[report_id]
+
+    db_report = repository.get_report(report_id)
+    if db_report:
+        _REPORTS_CACHE[report_id] = db_report
+        return db_report
+
+    return None
 
 
 async def run_module(
@@ -45,13 +59,8 @@ async def run_module(
     name: ModuleName, 
     work: Callable[[], Awaitable[None]]
 ) -> None:
-    """
-    Execute a single pipeline module with try/except isolation.
-    Guarantees a failure in one module never crashes the entire report.
-    """
     manager = get_manager()
-    
-    # Locate or initialize module state
+
     mod_state = next((m for m in report.modules if m.name == name), None)
     if not mod_state:
         mod_state = ModuleState(name=name, status="working")
@@ -88,10 +97,9 @@ async def run_module(
 
 
 async def enforce_time_budget(report: Report) -> None:
-    """Enforce maximum global time budget (90s). Mark unfinished modules as partial."""
     budget_sec = get_threshold("global_time_budget_seconds") or 90.0
     elapsed = (datetime.now(timezone.utc) - report.created_at).total_seconds()
-    
+
     if elapsed >= budget_sec:
         for mod in report.modules:
             if mod.status in ("pending", "working"):
@@ -101,34 +109,33 @@ async def enforce_time_budget(report: Report) -> None:
 
 async def run_investigation(report_id: str, url: str) -> None:
     manager = get_manager()
-    manager.create(report_id)  # Initialize event tracking history
-    
-    report = _REPORTS_CACHE.get(report_id)
+    manager.create(report_id)
+
+    report = get_report_by_id(report_id)
     if not report:
         return
 
     report.status = "running"
     manager.emit(report_id, "started", f"Starting investigation for {url}")
 
-    # Step 1: Capture primary listing page
     captured = await capture_page(url)
     report.captured_at = captured.captured_at
-    
+
     if not captured.ok:
         manager.emit(report_id, "failed", f"Failed to capture page: {captured.error_code or 'Unknown error'}")
         report.status = "failed"
+        repository.save_report(report)
         return
 
-    # Step 2: Initialize basic listing structure
     portal_id = detect_portal(url)
     report.portal = portal_id
-    
+
     source_ref = SourceRef(
         url=url, 
         portal=portal_id, 
         captured_at=captured.captured_at
     )
-    
+
     primary_listing = ListingFields(
         listing_id=f"list_{report_id}",
         source=source_ref,
@@ -137,19 +144,16 @@ async def run_investigation(report_id: str, url: str) -> None:
     )
     report.listing = primary_listing
 
-    # Module 1: Listing extraction
     async def task_listing():
-        # Assigned to Asmi's extraction service when merged; basic fallback populated
         primary_listing.title.value = "PG / Rental Listing"
         primary_listing.title.passage = captured.text[:100] if captured.text else None
 
     await run_module(report, "listing", task_listing)
 
-    # Module 2: Discovery & Matching (Hero 1)
     async def task_matching():
         urls, checks = await discover_candidate_urls(primary_listing)
         candidate_pages = await capture_pages(urls)
-        
+
         candidates: list[ListingFields] = []
         for idx, page in enumerate(candidate_pages):
             if page.ok:
@@ -167,7 +171,6 @@ async def run_investigation(report_id: str, url: str) -> None:
 
     await run_module(report, "matching", task_matching)
 
-    # Module 3: Cost Ladder (Hero 2)
     async def task_cost():
         report.cost = CostLadder(
             status="ok",
@@ -178,7 +181,6 @@ async def run_investigation(report_id: str, url: str) -> None:
 
     await run_module(report, "cost", task_cost)
 
-    # Module 4: Fair Price Check
     async def task_fair_price():
         report.fair_price = FairPriceResult(
             status="not_enough_data",
@@ -187,7 +189,6 @@ async def run_investigation(report_id: str, url: str) -> None:
 
     await run_module(report, "fair_price", task_fair_price)
 
-    # Module 5: Questions & Evidence Findings
     async def task_questions():
         report.questions = [
             QuestionItem(
@@ -209,23 +210,22 @@ async def run_investigation(report_id: str, url: str) -> None:
 
     await run_module(report, "questions", task_questions)
 
-    # Finalize report status and enforce global time constraints
     await enforce_time_budget(report)
     report.status = "completed"
+    repository.save_report(report)
     manager.emit(report_id, "completed", "Investigation complete. Report ready.")
 
 
 def start_investigation_job(url: str, force_refresh: bool = False) -> InvestigateResponse:
-    """Validate input, generate report container, and launch background job."""
     target_url = validate_listing_url(url)
-    
+
     if not force_refresh:
         cached = get_cached_report_by_url(target_url)
         if cached:
             return InvestigateResponse(report_id=cached.report_id, cached=True, is_replay=False)
 
     report_id = f"rep_{datetime.now(timezone.utc).strftime('%M%S')}"
-    
+
     report = Report(
         report_id=report_id,
         status="queued",
@@ -233,6 +233,7 @@ def start_investigation_job(url: str, force_refresh: bool = False) -> Investigat
         input_url=target_url,
         share_path=f"/report/{report_id}"
     )
-    
+
     _REPORTS_CACHE[report_id] = report
+    repository.save_report(report)
     return InvestigateResponse(report_id=report_id, cached=False, is_replay=False)
