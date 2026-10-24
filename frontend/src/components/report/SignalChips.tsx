@@ -1,44 +1,49 @@
+interface SignalFamilyResult {
+  family: string;
+  agreed: boolean;
+  detail?: string;
+}
 
-import type { FamilyResult, SignalFamily } from '../../types/api';
+interface SignalChipsProps {
+  families: SignalFamilyResult[];
+}
 
-const FAMILY_LABELS: Record<SignalFamily, string> = {
-  location: 'Location',
-  identity: 'Name / Operator',
-  content: 'Text Content',
-  visual: 'Photos',
+const FAMILY_LABELS: Record<string, string> = {
+  location: 'Geo Proximity',
+  identity: 'Name & Contact',
+  content: 'Text Similarity',
+  visual: 'Photo Fingerprint',
 };
 
-export function SignalChips({ families }: { families: FamilyResult[] }) {
-  if (!families) return null;
+export function SignalChips({ families }: SignalChipsProps) {
+  if (!families || families.length === 0) return null;
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {families.map((fam) => {
-        const isAgreed = fam.agreed === true;
-        const isDisagreed = fam.agreed === false;
-        const isNotCompared = fam.agreed === null;
-
-        let bgStyle = 'bg-[#F4EFEA] text-[#1A261C]/70 border-[#1A261C]/10';
-        let statusIcon = '•';
-
-        if (isAgreed) {
-          bgStyle = 'bg-[#1A261C]/10 text-[#1A261C] border-[#1A261C]/30 font-semibold';
-          statusIcon = '✓';
-        } else if (isDisagreed) {
-          bgStyle = 'bg-[#B80D1D]/10 text-[#B80D1D] border-[#B80D1D]/30 font-semibold';
-          statusIcon = '✕';
-        }
+    <div className="flex flex-wrap gap-2 pt-1">
+      {families.map((fam, idx) => {
+        const label = FAMILY_LABELS[fam.family] || fam.family;
+        const matched = fam.agreed;
 
         return (
-          <span
-            key={fam.family}
+          <div
+            key={idx}
             title={fam.detail}
-            className={`inline-flex items-center gap-1 text-[11px] px-2 py-0.5 rounded-md border ${bgStyle}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-mono font-medium border transition-all ${
+              matched
+                ? 'bg-[#1A261C]/5 text-[#1A261C] border-[#1A261C]/20'
+                : 'bg-[#B80D1D]/5 text-[#B80D1D] border-[#B80D1D]/25'
+            }`}
           >
-            <span className="text-[10px]">{statusIcon}</span>
-            <span>{FAMILY_LABELS[fam.family] || fam.family}</span>
-            {isNotCompared && <span className="text-[9px] opacity-60">(not compared)</span>}
-          </span>
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                matched ? 'bg-[#1A261C]' : 'bg-[#B80D1D]'
+              }`}
+            />
+            <span>{label}</span>
+            <span className="opacity-60 text-[10px]">
+              {matched ? '✓' : '✕'}
+            </span>
+          </div>
         );
       })}
     </div>
