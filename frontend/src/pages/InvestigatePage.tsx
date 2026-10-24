@@ -1,131 +1,130 @@
-import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
-import { useInvestigationStream } from '../hooks/useInvestigationStream';
-import { LiveBrowserGrid, type ActiveTile } from '../components/live/LiveBrowserGrid';
-import { StepLog } from '../components/live/StepLog';
-import { ProgressBar } from '../components/live/ProgressBar';
-import { ReportView } from '../components/report/ReportView';
+import { useParams, Link } from "react-router-dom";
+import { useInvestigationStream } from "@/hooks/useInvestigationStream";
+import { ReplayBanner } from "@/components/live/ReplayBanner";
+import { ProgressBar } from "@/components/live/ProgressBar";
+import { StepLog } from "@/components/live/StepLog";
+import { LiveBrowserGrid, type BrowserTileData } from "@/components/live/LiveBrowserGrid";
+import { ReportView } from "@/components/report/ReportView";
+import type { PortalId } from "@/types/api";
 
 export function InvestigatePage() {
   const { report_id } = useParams<{ report_id: string }>();
-  const navigate = useNavigate();
+  const { report, events, loading, error, setReport } = useInvestigationStream(report_id);
 
-  const activeId = report_id || 'demo';
-  const { report, events, loading, error } = useInvestigationStream(activeId);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFC] flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-12 h-12 border-4 border-[#F4EFEA] border-t-[#B80D1D] rounded-full animate-spin mb-4" />
+        <p className="text-sm font-bold text-[#1A261C]">Initializing Investigation Stream...</p>
+        <p className="text-xs text-[#1A261C]/60 mt-1">Establishing SSE channel to ProofRent backend</p>
+      </div>
+    );
+  }
 
-  const [tiles, setTiles] = useState<ActiveTile[]>([]);
+  if (error || !report) {
+    return (
+      <div className="min-h-screen bg-[#FAFAFC] flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <div className="bg-[#B80D1D]/10 text-[#B80D1D] p-5 rounded-2xl border border-[#B80D1D]/20 max-w-md shadow-sm">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider">Stream Connection Failure</h2>
+          <p className="text-xs mt-1.5">{error || "Report context not found."}</p>
+        </div>
+        <Link to="/" className="text-xs font-bold text-[#1A261C] hover:underline">
+          ← Return to Search
+        </Link>
+      </div>
+    );
+  }
 
-  // Update active stream tiles based on SSE job events
-  useEffect(() => {
-    if (!events || events.length === 0) return;
+  const isComplete = report.status === "completed" || report.status === "failed";
 
-    const latestEvent = events[events.length - 1];
+  const streamEvents = events.filter((e) => e.stream_url || e.screenshot_url);
+  const tiles: BrowserTileData[] = streamEvents.length > 0
+    ? streamEvents.slice(-2).map((evt, idx) => ({
+        id: `tile-${idx}-${evt.portal || "agent"}`,
+        portal: evt.portal as PortalId | null,
+        streamUrl: evt.stream_url,
+        lastScreenshotUrl: evt.screenshot_url,
+        finished: isComplete,
+        title: evt.message,
+      }))
+    : [
+        {
+          id: "primary-agent",
+          portal: report.portal || null,
+          streamUrl: null,
+          lastScreenshotUrl: null,
+          finished: isComplete,
+          title: report.input_url,
+        },
+      ];
 
-    if (latestEvent.portal || latestEvent.stream_url || latestEvent.screenshot_url) {
-      setTiles((prev) => {
-        const portalKey = latestEvent.portal || 'tinyfish_agent';
-        const existingIdx = prev.findIndex((t) => t.portal === portalKey);
-
-        const newTile: ActiveTile = {
-          portal: portalKey,
-          streamUrl: latestEvent.stream_url || (existingIdx >= 0 ? prev[existingIdx].streamUrl : null),
-          screenshotUrl: latestEvent.screenshot_url || (existingIdx >= 0 ? prev[existingIdx].screenshotUrl : null),
-          statusText: latestEvent.message,
-          finished: latestEvent.type === 'module_ready' || latestEvent.type === 'completed',
-        };
-
-        if (existingIdx >= 0) {
-          const updated = [...prev];
-          updated[existingIdx] = newTile;
-          return updated;
-        }
-
-        return [...prev, newTile];
-      });
-    }
-  }, [events]);
-
-  const isCompleted = report?.status === 'completed' || report?.status === 'failed';
-  const modules = report?.modules || [];
+  const handleRefetch = async () => {
+    setReport({ ...report });
+  };
 
   return (
-    <div className="min-h-screen bg-[#FAFAFC] p-4 sm:p-6 lg:p-8 space-y-8 max-w-6xl mx-auto">
-      {/* Top Bar Header */}
-      <header className="flex items-center justify-between border-b border-[#F4EFEA] pb-5">
+    <div className="min-h-screen bg-[#FAFAFC] flex flex-col">
+      {report.is_replay && <ReplayBanner label={report.replay_label} />}
+
+      <header className="bg-white border-b border-[#F4EFEA] px-6 py-4 flex items-center justify-between shrink-0">
         <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => navigate('/')}
-            className="text-xs font-bold text-[#1A261C] bg-white border border-[#F4EFEA] hover:bg-[#F4EFEA] px-3.5 py-2 rounded-xl transition-all shadow-sm"
+          <Link
+            to="/"
+            className="text-xs font-bold text-[#1A261C] hover:bg-[#F4EFEA] border border-[#F4EFEA] px-3 py-1.5 rounded-xl transition-all shadow-sm"
           >
-            ← Search New
-          </button>
+            ← Home
+          </Link>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#B80D1D]">
-                Real-Time AI Investigation
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1A261C]/50">
+                Live Run ID:
               </span>
-              <span className="text-[10px] font-mono font-bold bg-[#1A261C] text-white px-2 py-0.5 rounded-md">
-                ID: {activeId}
+              <span className="text-[11px] font-mono font-bold text-[#B80D1D] bg-[#B80D1D]/5 border border-[#B80D1D]/20 px-2 py-0.5 rounded-md">
+                {report_id}
               </span>
             </div>
-            <h1 className="text-xl font-extrabold text-[#1A261C] font-display tracking-tight mt-0.5">
-              ProofRent Multi-Portal Audit Stream
+            <h1 className="text-base font-extrabold text-[#1A261C] tracking-tight">
+              Active Rental Investigation Session
             </h1>
           </div>
         </div>
 
-        {isCompleted && (
-          <Link
-            to={`/report/${activeId}`}
-            className="text-xs font-bold text-white bg-[#B80D1D] hover:bg-[#8B0000] px-4 py-2.5 rounded-xl shadow-red-glow transition-all"
-          >
-            View Full Report Only ↗
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          <span className={`w-2.5 h-2.5 rounded-full ${isComplete ? "bg-emerald-500" : "bg-amber-500 animate-ping"}`} />
+          <span className="text-xs font-mono font-bold text-[#1A261C] uppercase">
+            {report.status}
+          </span>
+        </div>
       </header>
 
-      {/* Pipeline Module Progress */}
-      <ProgressBar modules={modules} />
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
+        <ProgressBar modules={report.modules} />
 
-      {/* Live Workspace Grid: Agent Browser & SSE Step Log */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-2">
-          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#1A261C]/60">
-            Active Browser Frames (Max 2 Parallel)
-          </h3>
-          <LiveBrowserGrid tiles={tiles} />
-        </div>
-
-        <div className="space-y-2">
-          <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-[#1A261C]/60">
-            Event Bus Terminal
-          </h3>
-          <StepLog events={events} isComplete={isCompleted} />
-        </div>
-      </section>
-
-      {/* Progressive Report Reveal */}
-      {report && (
-        <section className="pt-6 border-t border-[#F4EFEA] space-y-4">
+        <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-display font-extrabold text-[#1A261C]">
-              Generated Audit Output
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#1A261C]/80">
+              Live Agent Execution & Streaming Console
             </h2>
-            <span className="text-xs font-mono text-[#1A261C]/50">
-              {loading ? 'Fulfilling stream modules...' : 'Analysis synchronized'}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <LiveBrowserGrid tiles={tiles} />
+            <StepLog events={events} isComplete={isComplete} />
+          </div>
+        </section>
+
+        <section className="pt-4 border-t border-[#F4EFEA]">
+          <div className="mb-6 flex items-center justify-between">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-[#1A261C]">
+              Verified Report Findings
+            </h2>
+            <span className="text-xs font-mono text-[#1A261C]/60">
+              {isComplete ? "Final Report Compiled" : "Updating as modules finish..."}
             </span>
           </div>
 
-          <ReportView report={report} />
+          <ReportView report={report} onRefetch={handleRefetch} />
         </section>
-      )}
-
-      {error && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-rose-800 text-xs font-semibold text-center">
-          ⚠️ {error}
-        </div>
-      )}
+      </main>
     </div>
   );
 }

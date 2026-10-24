@@ -1,45 +1,51 @@
-import { LiveBrowserTile } from './LiveBrowserTile';
-import type { PortalId } from '../../types/api';
+import React from "react";
+import type { PortalId } from "@/types/api";
+import { LiveBrowserTile } from "./LiveBrowserTile";
 
-export interface ActiveTile {
-  portal: PortalId | string;
+export interface BrowserTileData {
+  id: string;
+  portal: PortalId | null;
   streamUrl: string | null;
-  screenshotUrl: string | null;
-  statusText?: string;
-  finished?: boolean;
+  lastScreenshotUrl: string | null;
+  finished: boolean;
+  title?: string;
 }
 
 interface LiveBrowserGridProps {
-  tiles: ActiveTile[];
+  tiles: BrowserTileData[];
 }
 
-export function LiveBrowserGrid({ tiles }: LiveBrowserGridProps) {
+export const LiveBrowserGrid: React.FC<LiveBrowserGridProps> = ({ tiles }) => {
   if (!tiles || tiles.length === 0) {
     return (
       <LiveBrowserTile
-        portal="magicbricks"
+        portal={null}
         streamUrl={null}
         lastScreenshotUrl={null}
-        statusText="Waiting for active portal streams..."
+        finished={false}
+        title="Primary Listing Extraction"
       />
     );
   }
 
-  // Display up to 2 active agent browser tiles concurrently per pipeline semaphore
-  const displayTiles = tiles.slice(0, 2);
+  const activeTiles = tiles.slice(0, 2);
 
   return (
-    <div className={`grid grid-cols-1 ${displayTiles.length > 1 ? 'lg:grid-cols-2' : ''} gap-4`}>
-      {displayTiles.map((tile, idx) => (
+    <div
+      className={`grid gap-4 ${
+        activeTiles.length > 1 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1"
+      }`}
+    >
+      {activeTiles.map((tile) => (
         <LiveBrowserTile
-          key={`${tile.portal}-${idx}`}
+          key={tile.id}
           portal={tile.portal}
           streamUrl={tile.streamUrl}
-          lastScreenshotUrl={tile.screenshotUrl}
-          statusText={tile.statusText}
+          lastScreenshotUrl={tile.lastScreenshotUrl}
           finished={tile.finished}
+          title={tile.title}
         />
       ))}
     </div>
   );
-}
+};
