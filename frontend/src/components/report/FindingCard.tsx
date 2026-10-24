@@ -1,105 +1,94 @@
-
 import type { Finding, SourceRef } from '../../types/api';
-function EvidenceLabelBadge({ label }: { label: string }) {
-  return (
-    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#1A261C]/10 text-[#1A261C] capitalize">
-      {label}
-    </span>
-  );
-}
-
-function ConfidenceBadge({ confidence }: { confidence: string }) {
-  return (
-    <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#F4EFEA] text-[#1A261C]/80 capitalize">
-      {confidence}
-    </span>
-  );
-}
 
 interface FindingCardProps {
   finding: Finding;
-  onOpenEvidence: (source: SourceRef) => void;
+  onOpenEvidence?: (source: SourceRef) => void;
 }
 
 export function FindingCard({ finding, onOpenEvidence }: FindingCardProps) {
-  const primarySource = finding.sources[0] || null;
+  if (!finding) return null;
+
+  const confidence = finding.confidence || 'medium';
+  const confidenceColor =
+    confidence === 'high'
+      ? 'bg-[#B80D1D] text-white'
+      : confidence === 'medium'
+      ? 'bg-[#1A261C] text-white'
+      : 'bg-[#F4EFEA] text-[#1A261C]';
 
   return (
-    <div className="bg-[#FAFAFC] border border-[#F4EFEA] rounded-xl p-5 shadow-sm hover:border-[#1A261C]/20 transition-all space-y-4">
-      {/* Top Bar */}
-      <div className="flex items-center justify-between gap-2 flex-wrap">
-        <div className="flex items-center gap-2">
-          <EvidenceLabelBadge label={finding.label} />
-          {finding.confidence && (
-            <ConfidenceBadge confidence={finding.confidence} />
-          )}
+    <div className="bg-white border-2 border-[#1A261C]/10 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all space-y-5">
+      {/* Top Banner: Kind & Confidence */}
+      <div className="flex items-center justify-between gap-3 border-b border-[#F4EFEA] pb-3.5">
+        <div className="flex items-center gap-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#B80D1D] animate-ping shrink-0" />
+          <h4 className="text-base font-extrabold text-[#1A261C] tracking-tight">
+            {finding.label || 'Verification Finding Discrepancy'}
+          </h4>
         </div>
-        <span className="text-xs font-semibold uppercase tracking-wider text-[#1A261C]/60 bg-[#F4EFEA] px-2.5 py-1 rounded-md">
-          {finding.kind.replace('_', ' ')}
+        <span className={`text-[10px] font-mono font-bold uppercase tracking-widest px-2.5 py-1 rounded-md ${confidenceColor}`}>
+          {confidence} Confidence
         </span>
       </div>
 
-      {/* What We Saw */}
-      <div className="space-y-1.5">
-        <h4 className="text-xs font-bold uppercase tracking-wider text-[#1A261C]/70">
-          What We Saw
-        </h4>
-        <p className="text-sm text-[#1A261C] font-medium leading-relaxed">
-          {finding.what_we_saw}
-        </p>
-        {primarySource && (
-          <button
-            type="button"
-            onClick={() => onOpenEvidence(primarySource)}
-            className="inline-flex items-center gap-1.5 text-xs text-[#B80D1D] font-semibold hover:underline mt-1 focus:outline-none"
-          >
-            <span>View source page & screenshot</span>
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </button>
+      {/* Grid: What We Saw vs How Matched */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* What We Saw */}
+        {finding.what_we_saw && (
+          <div className="bg-[#FAFAFC] border border-[#F4EFEA] rounded-xl p-4 space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#B80D1D]">
+              🚨 Observed Discrepancy
+            </span>
+            <p className="text-xs text-[#1A261C] leading-relaxed font-medium">
+              {finding.what_we_saw}
+            </p>
+          </div>
+        )}
+
+        {/* How We Matched */}
+        {finding.how_we_matched && (
+          <div className="bg-[#FAFAFC] border border-[#F4EFEA] rounded-xl p-4 space-y-1">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1A261C]/60">
+              🔍 Matching Methodology
+            </span>
+            <p className="text-xs text-[#1A261C]/80 leading-relaxed">
+              {finding.how_we_matched}
+            </p>
+          </div>
         )}
       </div>
 
-      {/* How We Matched */}
-      {finding.how_we_matched && (
-        <div className="bg-[#F4EFEA]/60 rounded-lg p-3 space-y-1">
-          <h5 className="text-xs font-bold text-[#1A261C]/70">
-            Matching Method
-          </h5>
-          <p className="text-xs text-[#1A261C] leading-normal">
-            {finding.how_we_matched}
-          </p>
-        </div>
-      )}
-
-      {/* Other Explanations */}
+      {/* Innocent Explanations */}
       {finding.other_explanations && finding.other_explanations.length > 0 && (
-        <div className="space-y-1.5">
-          <h5 className="text-xs font-bold text-[#1A261C]/70">
-            Innocent / Alternative Explanations
-          </h5>
-          <ul className="list-disc list-inside space-y-1">
-            {finding.other_explanations.map((exp, idx) => (
-              <li key={idx} className="text-xs text-[#1A261C]/80 leading-normal">
-                {exp}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* Question to Ask */}
-      {finding.question && (
-        <div className="border-l-4 border-[#B80D1D] bg-[#FAFAFC] pl-3 py-2 space-y-1">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#B80D1D]">
-            Suggested Question to Ask
+        <div className="bg-[#F4EFEA]/40 border-l-4 border-[#1A261C] p-3.5 rounded-r-xl space-y-1">
+          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1A261C]">
+            💡 Alternative Explanation
           </span>
-          <p className="text-xs font-semibold text-[#1A261C]">
-            "{finding.question}"
+          <p className="text-xs text-[#1A261C]/80 italic">
+            "{finding.other_explanations[0]}"
           </p>
         </div>
       )}
+
+      {/* Bottom Action: Question & Source Proof */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2 border-t border-[#F4EFEA]">
+        {finding.question && (
+          <div className="text-xs text-[#1A261C] font-semibold flex items-center gap-2">
+            <span className="text-[#B80D1D] font-mono font-bold">Ask:</span>
+            <span>"{finding.question}"</span>
+          </div>
+        )}
+
+        {finding.sources && finding.sources.length > 0 && onOpenEvidence && (
+          <button
+            type="button"
+            onClick={() => onOpenEvidence(finding.sources![0])}
+            className="text-xs font-bold text-white bg-[#1A261C] hover:bg-[#1A261C]/90 px-3.5 py-1.5 rounded-lg transition-colors shrink-0 self-start sm:self-auto"
+          >
+            View Evidence Proof ↗
+          </button>
+        )}
+      </div>
     </div>
   );
 }

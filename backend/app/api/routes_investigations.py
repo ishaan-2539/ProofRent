@@ -1,7 +1,8 @@
 import uuid
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, status
 from sse_starlette.sse import EventSourceResponse
 
+from app.core.errors import ProofRentError
 from app.schemas import (
     InvestigateRequest, 
     InvestigateResponse, 
@@ -16,6 +17,8 @@ from app.services.orchestrator import (
     run_investigation, 
     get_report_by_id
 )
+from app.services.replay import load_replay_report
+from app.db.repository import save_decision
 
 router = APIRouter(prefix="/api", tags=["investigations"])
 
@@ -28,15 +31,14 @@ async def start_investigation(req: InvestigateRequest, background_tasks: Backgro
         return InvestigateResponse(report_id=report_id, cached=True, is_replay=True)
 
     if not req.url:
-        raise HTTPException(
-            status_code=400, 
-            detail=ErrorResponse(
-                error=ApiError(code="INVALID_URL", message="Please provide a valid listing URL.")
-            ).model_dump()
+        raise ProofRentError(
+            code="INVALID_URL", 
+            custom_message="Please provide a valid listing URL.",
+            status_code=status.HTTP_400_BAD_REQUEST
         )
 
     inv_res = start_investigation_job(req.url, req.force_refresh)
-    
+
     if not inv_res.cached:
         background_tasks.add_task(run_investigation, inv_res.report_id, req.url)
 
@@ -46,13 +48,23 @@ async def start_investigation(req: InvestigateRequest, background_tasks: Backgro
 @router.get("/reports/{report_id}", response_model=Report)
 async def get_report(report_id: str):
     """Get the latest state of an investigation report."""
+    if report_id.startswith("replay_"):
+        example_id = report_id.replace("replay_", "")
+        try:
+            return load_replay_report(example_id)
+        except FileNotFoundError:
+            raise ProofRentError(
+                code="INTERNAL",
+                custom_message="Replay fixture not found.",
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
     report = get_report_by_id(report_id)
     if not report:
-        raise HTTPException(
-            status_code=404,
-            detail=ErrorResponse(
-                error=ApiError(code="INTERNAL", message="Report not found.")
-            ).model_dump()
+        raise ProofRentError(
+            code="INTERNAL",
+            custom_message="Report not found.",
+            status_code=status.HTTP_404_NOT_FOUND
         )
     return report
 
@@ -70,3 +82,27 @@ async def stream_report_events(report_id: str):
             }
 
     return EventSourceResponse(event_generator())
+
+
+@router.post("/reports/{report_id}/decision", response_model=Report)
+async def submit_decision(report_id: str, req: DecisionRequest):
+    """Update user decision on candidate match override (confirmed / rejected)."""
+    try:
+        updated_report = save_decision(report_id, req.candidate_id, req.decision)
+        return updated_report
+    except ValueError as ve:
+        raise ProofRentError(
+            code="INTERNAL",
+            custom_message=str(ve),
+            next_step="Verify that the candidate_id exists in this report.",
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+    except ProofRentError:
+        raise
+    except Exception as e:
+        raise ProofRentError(
+            code="INTERNAL",
+            custom_message=f"Failed to record decision: {str(e)}",
+            next_step="Please try submitting your decision again.",
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

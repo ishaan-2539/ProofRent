@@ -104,7 +104,6 @@ export function ReportPage() {
     setError(null);
 
     try {
-      // Attempt API call
       const res = await fetch(`/api/reports/${report_id || 'demo'}`);
       if (!res.ok) {
         throw new Error(`Server responded with status ${res.status}`);
@@ -113,7 +112,6 @@ export function ReportPage() {
       setReport(data);
     } catch (err: any) {
       console.warn('Backend API unreachable or endpoint not found. Loading demo mock data:', err.message);
-      // Fallback to mock data so UI renders seamlessly
       setReport(MOCK_REPORT_DATA);
     } finally {
       setLoading(false);
@@ -128,8 +126,8 @@ export function ReportPage() {
     return (
       <div className="min-h-screen bg-[#FAFAFC] flex flex-col items-center justify-center p-6 text-center">
         <div className="w-10 h-10 border-4 border-[#F4EFEA] border-t-[#B80D1D] rounded-full animate-spin mb-4" />
-        <p className="text-sm font-semibold text-[#1A261C]">Loading ProofRent Verification Report...</p>
-        <p className="text-xs text-[#1A261C]/60 mt-1">Analyzing cross-platform signals & fair price models</p>
+        <p className="text-sm font-bold text-[#1A261C]">Loading ProofRent Audit...</p>
+        <p className="text-xs text-[#1A261C]/60 mt-1">Cross-referencing multi-platform listing records & price models</p>
       </div>
     );
   }
@@ -137,13 +135,13 @@ export function ReportPage() {
   if (error && !report) {
     return (
       <div className="min-h-screen bg-[#FAFAFC] flex flex-col items-center justify-center p-6 text-center space-y-4">
-        <div className="bg-[#B80D1D]/10 text-[#B80D1D] p-4 rounded-xl border border-[#B80D1D]/20 max-w-md">
-          <h2 className="text-sm font-bold uppercase tracking-wider">Report Load Error</h2>
-          <p className="text-xs mt-1">{error}</p>
+        <div className="bg-[#B80D1D]/10 text-[#B80D1D] p-5 rounded-2xl border border-[#B80D1D]/20 max-w-md shadow-sm">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider">Report Load Failure</h2>
+          <p className="text-xs mt-1.5">{error}</p>
         </div>
         <Link
           to="/"
-          className="text-xs font-semibold text-[#1A261C] hover:underline"
+          className="text-xs font-bold text-[#1A261C] hover:underline"
         >
           ← Return to Search
         </Link>
@@ -160,31 +158,40 @@ export function ReportPage() {
 
   return (
     <div className="min-h-screen bg-[#FAFAFC] p-4 sm:p-6 lg:p-8">
-      {/* Top Header Navigation */}
-      <header className="max-w-5xl mx-auto mb-6 flex items-center justify-between border-b border-[#F4EFEA] pb-4">
-        <div className="flex items-center gap-3">
+      {/* Top Navigation & Audit Header */}
+      <header className="max-w-5xl mx-auto mb-8 flex items-center justify-between border-b border-[#F4EFEA] pb-5">
+        <div className="flex items-center gap-4">
           <Link
             to="/"
-            className="text-xs font-bold text-[#1A261C]/70 hover:text-[#1A261C] transition-colors bg-[#F4EFEA] px-3 py-1.5 rounded-lg"
+            className="text-xs font-bold text-[#1A261C] hover:bg-[#F4EFEA] bg-white border border-[#F4EFEA] px-3.5 py-2 rounded-xl transition-all shadow-sm flex items-center gap-1.5"
           >
-            ← Back
+            <span>←</span> Back
           </Link>
           <div>
-            <h1 className="text-lg font-bold text-[#1A261C]">ProofRent Verification Audit</h1>
-            <p className="text-[11px] text-[#1A261C]/60">Report ID: {report_id || report?.report_id}</p>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1A261C]/50">
+                Audit Record:
+              </span>
+              <span className="text-[11px] font-mono font-bold text-[#B80D1D] bg-[#B80D1D]/5 border border-[#B80D1D]/20 px-2 py-0.5 rounded-md">
+                {report_id || report?.report_id || 'DEMO'}
+              </span>
+            </div>
+            <h1 className="text-xl font-extrabold text-[#1A261C] tracking-tight mt-0.5">
+              Property Verification & Risk Audit
+            </h1>
           </div>
         </div>
 
         <button
           type="button"
           onClick={fetchReport}
-          className="text-xs font-semibold text-[#B80D1D] bg-[#B80D1D]/10 hover:bg-[#B80D1D]/20 px-3 py-1.5 rounded-lg transition-colors"
+          className="text-xs font-bold text-[#B80D1D] bg-[#B80D1D]/10 hover:bg-[#B80D1D]/20 border border-[#B80D1D]/20 px-4 py-2 rounded-xl transition-all flex items-center gap-1.5"
         >
-          ↻ Refresh Analysis
+          <span>↻</span> Refresh Analysis
         </button>
       </header>
 
-      {/* Main Report Dashboard */}
+      {/* Main Verification Dashboard */}
       <main>
         <ReportView report={report} onRefetch={fetchReport} />
       </main>

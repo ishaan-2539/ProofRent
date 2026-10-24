@@ -18,32 +18,32 @@ export function ModuleBlock({
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <section className="bg-white border border-[#F4EFEA] rounded-2xl shadow-sm overflow-hidden transition-all">
-      {/* Section Header */}
+    <section className="bg-white border border-[#F4EFEA] rounded-3xl shadow-luxury overflow-hidden transition-all">
+      {/* Clean White & Deep Olive Header */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-5 text-left bg-[#FAFAFC] hover:bg-[#F4EFEA]/40 transition-colors focus:outline-none"
+        className="w-full flex items-center justify-between p-6 text-left bg-white border-b border-[#F4EFEA] hover:bg-[#FAF8F5] transition-colors focus:outline-none"
       >
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-base font-bold text-[#1A261C]">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <h2 className="font-display font-extrabold text-xl text-[#1A261C] tracking-tight">
               {title}
             </h2>
             {badge && (
-              <span className="text-[10px] font-bold uppercase tracking-wider bg-[#B80D1D]/10 text-[#B80D1D] border border-[#B80D1D]/20 px-2 py-0.5 rounded-md">
+              <span className="text-[11px] font-bold uppercase tracking-wider bg-[#B80D1D]/10 text-[#B80D1D] border border-[#B80D1D]/20 px-3 py-0.5 rounded-full">
                 {badge}
               </span>
             )}
           </div>
           {subtitle && (
-            <p className="text-xs text-[#1A261C]/60">{subtitle}</p>
+            <p className="text-xs text-[#1A261C]/60 font-medium">{subtitle}</p>
           )}
         </div>
 
-        <div className="flex items-center gap-2 text-[#1A261C]/60">
-          <span className="text-xs font-semibold">
-            {isOpen ? 'Collapse' : 'Expand'}
+        <div className="flex items-center gap-2 text-[#1A261C]/60 shrink-0 ml-4">
+          <span className="text-xs font-bold uppercase tracking-wider">
+            {isOpen ? 'Minimize' : 'Expand'}
           </span>
           <svg
             className={`w-4 h-4 transform transition-transform duration-200 ${
@@ -53,13 +53,12 @@ export function ModuleBlock({
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
           </svg>
         </div>
       </button>
 
-      {/* Section Content */}
-      {isOpen && <div className="p-5 border-t border-[#F4EFEA]">{children}</div>}
+      {isOpen && <div className="p-6 bg-[#FAFAFC]">{children}</div>}
     </section>
   );
 }
