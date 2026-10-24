@@ -6,14 +6,15 @@ export function HomePage() {
   const navigate = useNavigate();
   const [analyzing, setAnalyzing] = useState(false);
 
-  const handleAnalyzeUrl = (_url: string) => {
+  const handleAnalyzeUrl = (url: string) => {
     setAnalyzing(true);
 
-    // Simulate AI extraction delay then route directly to the audit report
+    // Route to live investigation stream session
+    const id = encodeURIComponent(url.replace(/[^a-zA-Z0-9]/g, '-').slice(-24) || 'demo');
     setTimeout(() => {
       setAnalyzing(false);
-      navigate('/report/demo');
-    }, 1200);
+      navigate(`/investigate/${id}`);
+    }, 600);
   };
 
   return (
@@ -36,10 +37,16 @@ export function HomePage() {
 
         <div className="flex items-center gap-4">
           <Link
-            to="/report/demo"
+            to="/preflight"
+            className="text-xs font-semibold text-[#1A261C]/70 hover:text-[#1A261C] transition-colors"
+          >
+            System Status
+          </Link>
+          <Link
+            to="/investigate/demo"
             className="text-xs font-bold text-[#1A261C] hover:bg-[#F4EFEA] border border-[#F4EFEA] px-4 py-2 rounded-xl transition-all shadow-sm"
           >
-            Explore Demo Audit ↗
+            Explore Live Agent Stream ↗
           </Link>
         </div>
       </header>

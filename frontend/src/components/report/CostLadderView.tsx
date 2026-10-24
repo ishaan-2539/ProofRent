@@ -8,10 +8,13 @@ interface CostLadderViewProps {
 export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) {
   if (!ladder) return null;
 
+  const lad = ladder as any;
   const headline = ladder.headline || 'Move-in & Monthly Financial Obligations';
-  const totalFirstMonth = ladder.total_first_month || 0;
-  const monthlyRecurring = ladder.monthly_recurring || 0;
-  const items = ladder.items || [];
+  
+  // Extract values using contract schema (move_in_min, monthly_min, lines) with mock fallback support
+  const totalFirstMonth = ladder.move_in_min ?? lad.total_first_month ?? 0;
+  const monthlyRecurring = ladder.monthly_min ?? lad.monthly_recurring ?? 0;
+  const items: any[] = ladder.lines || lad.items || [];
 
   return (
     <div className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-6">
@@ -37,7 +40,7 @@ export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) 
             Total First Month Outlay
           </span>
           <div className="font-display text-2xl font-extrabold text-[#FAF8F5]">
-            ₹{totalFirstMonth.toLocaleString('en-IN')}
+            ₹{Number(totalFirstMonth).toLocaleString('en-IN')}
           </div>
           <p className="text-[11px] text-[#FAF8F5]/60">Includes rent, security deposit & fees</p>
         </div>
@@ -47,7 +50,7 @@ export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) 
             Est. Monthly Recurring
           </span>
           <div className="font-display text-2xl font-extrabold text-[#1A261C]">
-            ₹{monthlyRecurring.toLocaleString('en-IN')}
+            ₹{Number(monthlyRecurring).toLocaleString('en-IN')}
           </div>
           <p className="text-[11px] text-[#1A261C]/60">Base rent + recurring obligations</p>
         </div>
@@ -60,7 +63,10 @@ export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) 
         </h4>
         <div className="space-y-2">
           {items.map((item: any, idx: number) => {
-            const isHidden = item.is_hidden_cost || item.hidden;
+            const isHidden = item.is_hidden_cost || item.hidden || item.label === 'assumed';
+            const labelTitle = item.title || item.label || item.name;
+            const amountVal = item.amount_min ?? item.amount ?? 0;
+
             return (
               <div
                 key={idx}
@@ -73,7 +79,7 @@ export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) 
                 <div className="space-y-0.5">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold text-[#1A261C]">
-                      {item.label || item.name}
+                      {labelTitle}
                     </span>
                     {isHidden && (
                       <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-[#B80D1D] text-white px-2 py-0.5 rounded-full">
@@ -81,15 +87,15 @@ export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) 
                       </span>
                     )}
                   </div>
-                  {item.note && (
+                  {(item.note || item.assumption_text || item.passage) && (
                     <p className="text-[11px] text-[#1A261C]/60 italic">
-                      {item.note}
+                      {item.note || item.assumption_text || item.passage}
                     </p>
                   )}
                 </div>
 
                 <div className="font-display text-sm font-extrabold text-[#1A261C]">
-                  ₹{Number(item.amount || 0).toLocaleString('en-IN')}
+                  ₹{Number(amountVal).toLocaleString('en-IN')}
                 </div>
               </div>
             );
