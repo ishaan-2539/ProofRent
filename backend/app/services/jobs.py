@@ -30,6 +30,9 @@ class JobManager:
         progress: Optional[float] = None,
         error: Optional[ApiError] = None
     ) -> JobEvent:
+        # Guarantee history bucket exists before recording event
+        self.create(report_id)
+
         event = JobEvent(
             report_id=report_id,
             type=event_type,
@@ -43,8 +46,7 @@ class JobManager:
             error=error
         )
 
-        if report_id in self._history:
-            self._history[report_id].append(event)
+        self._history[report_id].append(event)
 
         if report_id in self._listeners:
             for queue in self._listeners[report_id]:
