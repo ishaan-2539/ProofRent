@@ -1,6 +1,21 @@
 import React from 'react';
 import { Finding, SourceRef } from '../../types/api';
-import { EvidenceLabelBadge, ConfidenceBadge } from '../common';
+
+function EvidenceLabelBadge({ label }: { label: string }) {
+  return (
+    <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#1A261C]/10 text-[#1A261C] capitalize">
+      {label}
+    </span>
+  );
+}
+
+function ConfidenceBadge({ confidence }: { confidence: string }) {
+  return (
+    <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-[#F4EFEA] text-[#1A261C]/80 capitalize">
+      {confidence}
+    </span>
+  );
+}
 
 interface FindingCardProps {
   finding: Finding;
@@ -12,7 +27,7 @@ export function FindingCard({ finding, onOpenEvidence }: FindingCardProps) {
 
   return (
     <div className="bg-[#FAFAFC] border border-[#F4EFEA] rounded-xl p-5 shadow-sm hover:border-[#1A261C]/20 transition-all space-y-4">
-      {/* Top Bar: Labels & Confidence */}
+      {/* Top Bar */}
       <div className="flex items-center justify-between gap-2 flex-wrap">
         <div className="flex items-center gap-2">
           <EvidenceLabelBadge label={finding.label} />
@@ -25,7 +40,7 @@ export function FindingCard({ finding, onOpenEvidence }: FindingCardProps) {
         </span>
       </div>
 
-      {/* Part 1: What We Saw */}
+      {/* What We Saw */}
       <div className="space-y-1.5">
         <h4 className="text-xs font-bold uppercase tracking-wider text-[#1A261C]/70">
           What We Saw
@@ -47,7 +62,7 @@ export function FindingCard({ finding, onOpenEvidence }: FindingCardProps) {
         )}
       </div>
 
-      {/* Part 2: How We Matched (If Present) */}
+      {/* How We Matched */}
       {finding.how_we_matched && (
         <div className="bg-[#F4EFEA]/60 rounded-lg p-3 space-y-1">
           <h5 className="text-xs font-bold text-[#1A261C]/70">
@@ -59,7 +74,7 @@ export function FindingCard({ finding, onOpenEvidence }: FindingCardProps) {
         </div>
       )}
 
-      {/* Part 3: Other Explanations */}
+      {/* Other Explanations */}
       {finding.other_explanations && finding.other_explanations.length > 0 && (
         <div className="space-y-1.5">
           <h5 className="text-xs font-bold text-[#1A261C]/70">
@@ -75,7 +90,7 @@ export function FindingCard({ finding, onOpenEvidence }: FindingCardProps) {
         </div>
       )}
 
-      {/* Part 4: Question to Ask */}
+      {/* Question to Ask */}
       {finding.question && (
         <div className="border-l-4 border-[#B80D1D] bg-[#FAFAFC] pl-3 py-2 space-y-1">
           <span className="text-[10px] font-bold uppercase tracking-wider text-[#B80D1D]">
