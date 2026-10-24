@@ -1,0 +1,110 @@
+export const MOCK_REPORT_DATA: any = {
+  report_id: 'demo',
+  status: 'completed',
+  url: 'https://www.magicbricks.com/pg-in-koramangala-bangalore-pdpid-4d423132383137',
+  created_at: new Date().toISOString(),
+  modules: [
+    { name: 'listing', status: 'success', duration_ms: 820 },
+    { name: 'matching', status: 'success', duration_ms: 1450 },
+    { name: 'cost', status: 'success', duration_ms: 610 },
+    { name: 'fair_price', status: 'success', duration_ms: 930 },
+    { name: 'questions', status: 'success', duration_ms: 450 },
+  ],
+  listing: {
+    title: { value: 'Luxury Single Room PG near Forum Mall', confidence: 'high' },
+    address: { value: '5th Block, Koramangala, Bengaluru, Karnataka 560095', confidence: 'high' },
+    lat: { value: 12.9352, confidence: 'high' },
+    lng: { value: 77.6245, confidence: 'high' },
+    rent_stated: { value: 28000, confidence: 'high' },
+    deposit_stated: { value: 56000, confidence: 'high' },
+    maintenance_stated: { value: 1000, confidence: 'high' },
+    photos: [
+      'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80',
+    ],
+  },
+  matching: {
+    candidates: [
+      {
+        candidate_id: 'cand-nobroker-101',
+        source_platform: 'NoBroker',
+        title: '1 BHK Fully Furnished Flat - 5th Block Koramangala',
+        address: '5th Block, Koramangala, Bengaluru',
+        rent: 24000,
+        deposit: 48000,
+        maintenance: 1000,
+        distance_m: 120,
+        screenshot_url: 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80',
+        url: 'https://www.nobroker.in/property/rent/bangalore/koramangala',
+        user_decision: 'unreviewed',
+        price_gaps: [
+          {
+            field: 'Rent Disparity',
+            delta: -4000,
+            note: 'Same property listed ₹4,000 cheaper on NoBroker',
+          },
+        ],
+        family_results: [
+          { family: 'location', matched: true, score: 0.98, note: 'Coordinates match within 120 meters' },
+          { family: 'visual', matched: true, score: 0.94, note: 'Perceptual image hash matches room interior' },
+          { family: 'content', matched: true, score: 0.89, note: 'Amenities and floor plan match target' },
+        ],
+      },
+    ],
+  },
+  cost_ladder: {
+    headline: 'Move-in & Recurring Obligations',
+    move_in_min: 85000,
+    monthly_min: 29000,
+    lines: [
+      {
+        key: 'rent',
+        title: 'Base Monthly Rent',
+        amount_min: 28000,
+        label: 'verified',
+        passage: 'Stated rent on primary MagicBricks listing',
+      },
+      {
+        key: 'deposit',
+        title: 'Security Deposit (2 Months)',
+        amount_min: 56000,
+        label: 'verified',
+        passage: 'Refundable security deposit equivalent to 2 months rent',
+      },
+      {
+        key: 'maintenance',
+        title: 'Monthly Maintenance Charge',
+        amount_min: 1000,
+        label: 'verified',
+        passage: 'Fixed monthly society maintenance fee',
+      },
+      {
+        key: 'food_plan',
+        title: 'Optional Food & Catering Add-on',
+        amount_min: 0,
+        label: 'unknown',
+        question: 'Is breakfast and dinner included in base rent, or is there an extra meal fee?',
+      },
+    ],
+  },
+  fair_price: {
+    suggested_min: 23500,
+    suggested_max: 25500,
+    confidence: 'high',
+    reasoning: 'Based on 14 recent 1BHK/PG listings within a 500m radius in Koramangala 5th Block.',
+    comparables_count: 14,
+  },
+  questions: [
+    {
+      id: 'q1',
+      category: 'price',
+      question: 'Why is this same unit listed on NoBroker for ₹24,000/month while listed here for ₹28,000/month?',
+      why: 'Cross-portal duplicate analysis detected a ₹4,000/month price disparity.',
+    },
+    {
+      id: 'q2',
+      category: 'deposit',
+      question: 'Is the 2-month security deposit refundable immediately upon notice or subject to painting deductions?',
+      why: 'Clarifies hidden move-out deductions upfront.',
+    },
+  ],
+};
