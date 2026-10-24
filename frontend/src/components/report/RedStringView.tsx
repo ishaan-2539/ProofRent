@@ -1,19 +1,33 @@
-
 import type { ListingFields, MatchingResult, UserDecision, SourceRef } from '../../types/api';
 import { FindingCard } from './FindingCard';
 import { MatchSideBySide } from './MatchSideBySide';
+import { submitDecision } from '../../api/client';
 
 interface RedStringViewProps {
+  reportId: string;
   listing: ListingFields;
   matching: MatchingResult;
   onDecision: (candidateId: string, d: UserDecision) => void;
   onOpenEvidence?: (source: SourceRef) => void;
 }
 
-export function RedStringView({ listing, matching, onDecision, onOpenEvidence }: RedStringViewProps) {
+export function RedStringView({ reportId, listing, matching, onDecision, onOpenEvidence }: RedStringViewProps) {
   const handleOpenEvidence = (source: SourceRef) => {
     if (onOpenEvidence) {
       onOpenEvidence(source);
+    }
+  };
+
+  const handleDecision = async (candidateId: string, d: UserDecision) => {
+    // 1. Immediately update UI state locally
+    onDecision(candidateId, d);
+
+    // 2. Fire backend call to persist decision
+    try {
+      const apiDecision = (d === 'confirmed' || (d as string) === 'confirm') ? 'confirm' : 'reject';
+      await submitDecision(reportId, { candidate_id: candidateId, decision: apiDecision });
+    } catch (err) {
+      console.error('Failed to submit match decision to backend:', err);
     }
   };
 
@@ -34,7 +48,7 @@ export function RedStringView({ listing, matching, onDecision, onOpenEvidence }:
                 key={cand.candidate_id}
                 listing={listing}
                 candidate={cand}
-                onDecision={onDecision}
+                onDecision={handleDecision}
                 onOpenEvidence={handleOpenEvidence}
               />
             ))}

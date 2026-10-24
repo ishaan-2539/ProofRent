@@ -31,10 +31,13 @@ export function ReportView({ report, onRefetch }: ReportViewProps) {
   const fairPrice = report.fair_price || null;
   const questions = report.questions || [];
 
-  const handleUserDecision = async (candidateId: string, decision: UserDecision) => {
+  const handleOpenEvidence = (source: SourceRef) => {
+    setSelectedEvidence(source);
+  };
+
+  const handleDecision = async (candidateId: string, decision: UserDecision) => {
     const reportId = report.report_id || 'demo';
     
-    // Optimistically reflect decision locally in state
     if (matching.candidates) {
       const cand = matching.candidates.find((c: any) => c.candidate_id === candidateId);
       if (cand) cand.user_decision = decision;
@@ -63,10 +66,11 @@ export function ReportView({ report, onRefetch }: ReportViewProps) {
         badge={matching?.candidates?.length ? `${matching.candidates.length} Matches` : undefined}
       >
         <RedStringView
+          reportId={report.report_id || 'demo'}
           listing={listing}
           matching={matching}
-          onDecision={handleUserDecision}
-          onOpenEvidence={(src) => setSelectedEvidence(src)}
+          onDecision={handleDecision}
+          onOpenEvidence={handleOpenEvidence}
         />
       </ModuleBlock>
 
@@ -79,7 +83,7 @@ export function ReportView({ report, onRefetch }: ReportViewProps) {
           >
             <CostLadderView
               ladder={costLadder}
-              onOpenEvidence={(src) => setSelectedEvidence(src)}
+              onOpenEvidence={handleOpenEvidence}
             />
           </ModuleBlock>
         )}
