@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { UserDecision, SourceRef } from '../../types/api';
+import { submitMatchDecision } from '../../api/client';
 import { RedStringView } from './RedStringView';
 import { CostLadderView } from './CostLadderView';
 import { FairPriceCard } from './FairPriceCard';
@@ -26,12 +27,25 @@ export function ReportView({ report, onRefetch }: ReportViewProps) {
 
   const listing = report.listing || {};
   const matching = report.matching || {};
-  const costLadder = report.cost_ladder || null;
+  const costLadder = report.cost_ladder || report.cost || null;
   const fairPrice = report.fair_price || null;
   const questions = report.questions || [];
 
-  const handleUserDecision = (candidateId: string, decision: UserDecision) => {
-    console.log(`User decision for candidate ${candidateId}: ${decision}`);
+  const handleUserDecision = async (candidateId: string, decision: UserDecision) => {
+    const reportId = report.report_id || 'demo';
+    
+    // Optimistically reflect decision locally in state
+    if (matching.candidates) {
+      const cand = matching.candidates.find((c: any) => c.candidate_id === candidateId);
+      if (cand) cand.user_decision = decision;
+    }
+
+    try {
+      await submitMatchDecision(reportId, { candidate_id: candidateId, decision });
+    } catch (err) {
+      console.warn('API Endpoint POST /api/reports/:id/decision offline or mock mode:', err);
+    }
+
     if (onRefetch) {
       onRefetch();
     }
