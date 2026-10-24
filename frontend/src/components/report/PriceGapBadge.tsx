@@ -1,5 +1,5 @@
-import React from 'react';
-import { PriceGap } from '../../types/api';
+
+import type { PriceGap } from '../../types/api';
 
 function formatRupees(n: number | null): string {
   if (n === null || n === undefined) return '—';

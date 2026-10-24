@@ -1,6 +1,5 @@
 import React from 'react';
 import type { Finding, SourceRef } from '../../types/api';
-
 function EvidenceLabelBadge({ label }: { label: string }) {
   return (
     <span className="text-[11px] font-bold px-2 py-0.5 rounded bg-[#1A261C]/10 text-[#1A261C] capitalize">
