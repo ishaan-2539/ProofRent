@@ -1,4 +1,6 @@
+import { useState, useEffect } from 'react';
 import type { CostLadder, SourceRef } from '../../types/api';
+import { CostStep } from './CostStep';
 
 interface CostLadderViewProps {
   ladder: CostLadder;
@@ -10,11 +12,38 @@ export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) 
 
   const lad = ladder as any;
   const headline = ladder.headline || 'Move-in & Monthly Financial Obligations';
-  
-  // Extract values using contract schema (move_in_min, monthly_min, lines) with mock fallback support
+
   const totalFirstMonth = ladder.move_in_min ?? lad.total_first_month ?? 0;
   const monthlyRecurring = ladder.monthly_min ?? lad.monthly_recurring ?? 0;
   const items: any[] = ladder.lines || lad.items || [];
+
+  // Animated tally count-up state for demo presentation
+  const [animatedFirstMonth, setAnimatedFirstMonth] = useState<number>(0);
+  const [animatedMonthly, setAnimatedMonthly] = useState<number>(0);
+
+  useEffect(() => {
+    let start = 0;
+    const duration = 1000;
+    const stepTime = 20;
+    const steps = duration / stepTime;
+    
+    const incrementFirstMonth = totalFirstMonth / steps;
+    const incrementMonthly = monthlyRecurring / steps;
+
+    const timer = setInterval(() => {
+      start++;
+      setAnimatedFirstMonth((prev) => Math.min(totalFirstMonth, Math.floor(prev + incrementFirstMonth)));
+      setAnimatedMonthly((prev) => Math.min(monthlyRecurring, Math.floor(prev + incrementMonthly)));
+
+      if (start >= steps) {
+        setAnimatedFirstMonth(totalFirstMonth);
+        setAnimatedMonthly(monthlyRecurring);
+        clearInterval(timer);
+      }
+    }, stepTime);
+
+    return () => clearInterval(timer);
+  }, [totalFirstMonth, monthlyRecurring]);
 
   return (
     <div className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-6">
@@ -40,7 +69,7 @@ export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) 
             Total First Month Outlay
           </span>
           <div className="font-display text-2xl font-extrabold text-[#FAF8F5]">
-            ₹{Number(totalFirstMonth).toLocaleString('en-IN')}
+            ₹{animatedFirstMonth.toLocaleString('en-IN')}
           </div>
           <p className="text-[11px] text-[#FAF8F5]/60">Includes rent, security deposit & fees</p>
         </div>
@@ -50,56 +79,25 @@ export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) 
             Est. Monthly Recurring
           </span>
           <div className="font-display text-2xl font-extrabold text-[#1A261C]">
-            ₹{Number(monthlyRecurring).toLocaleString('en-IN')}
+            ₹{animatedMonthly.toLocaleString('en-IN')}
           </div>
           <p className="text-[11px] text-[#1A261C]/60">Base rent + recurring obligations</p>
         </div>
       </div>
 
       {/* Itemized Table */}
-      <div className="space-y-2 pt-2">
+      <div className="space-y-3 pt-2">
         <h4 className="text-xs font-bold uppercase tracking-wider text-[#1A261C]/50">
           Itemized Outlay Breakdown
         </h4>
-        <div className="space-y-2">
-          {items.map((item: any, idx: number) => {
-            const isHidden = item.is_hidden_cost || item.hidden || item.label === 'assumed';
-            const labelTitle = item.title || item.label || item.name;
-            const amountVal = item.amount_min ?? item.amount ?? 0;
-
-            return (
-              <div
-                key={idx}
-                className={`p-3.5 rounded-2xl border transition-all flex items-center justify-between ${
-                  isHidden
-                    ? 'bg-[#B80D1D]/5 border-[#B80D1D]/30'
-                    : 'bg-white border-[#F4EFEA] hover:border-[#1A261C]/20'
-                }`}
-              >
-                <div className="space-y-0.5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-[#1A261C]">
-                      {labelTitle}
-                    </span>
-                    {isHidden && (
-                      <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-[#B80D1D] text-white px-2 py-0.5 rounded-full">
-                        Hidden Fee Flag
-                      </span>
-                    )}
-                  </div>
-                  {(item.note || item.assumption_text || item.passage) && (
-                    <p className="text-[11px] text-[#1A261C]/60 italic">
-                      {item.note || item.assumption_text || item.passage}
-                    </p>
-                  )}
-                </div>
-
-                <div className="font-display text-sm font-extrabold text-[#1A261C]">
-                  ₹{Number(amountVal).toLocaleString('en-IN')}
-                </div>
-              </div>
-            );
-          })}
+        <div className="space-y-2.5">
+          {items.map((item: any, idx: number) => (
+            <CostStep
+              key={idx}
+              item={item}
+              onOpenEvidence={onOpenEvidence}
+            />
+          ))}
         </div>
       </div>
     </div>
