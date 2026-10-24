@@ -76,3 +76,30 @@ export async function submitMatchDecision(reportId: string, req: DecisionRequest
 export function getPdfUrl(reportId: string): string {
   return `${BASE_URL}/api/reports/${reportId}/pdf`;
 }
+
+export async function submitDecision(
+  reportId: string,
+  body: { verdict: string; notes?: string }
+): Promise<void> {
+  const res = await fetch(`${BASE_URL}/api/investigations/${reportId}/decision`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to submit review decision (${res.status})`);
+  }
+}
+
+export async function exportPdf(reportId: string): Promise<Blob> {
+  const res = await fetch(`${BASE_URL}/api/investigations/${reportId}/export/pdf`, {
+    method: "GET",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to export PDF report (${res.status})`);
+  }
+
+  return await res.blob();
+}
