@@ -1,6 +1,7 @@
 from fastapi import APIRouter
+from app.clients.tinyfish import get_tinyfish_client
 from app.core.constants import get_constants
-from app.schemas import ExampleListing, PreflightResult
+from app.schemas import ExampleListing, PreflightResult, WalletInfo
 
 router = APIRouter(prefix="/api", tags=["system"])
 
@@ -9,6 +10,13 @@ router = APIRouter(prefix="/api", tags=["system"])
 async def health_check():
     constants = get_constants()
     return {"ok": True, "contract_version": constants.get("contract_version", "1.0")}
+
+
+@router.get("/wallet", response_model=WalletInfo)
+async def check_wallet():
+    """Check remaining TinyFish API balance."""
+    client = get_tinyfish_client()
+    return await client.get_wallet()
 
 
 @router.get("/examples", response_model=list[ExampleListing])
