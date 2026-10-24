@@ -1,5 +1,5 @@
 import React from "react";
-import { ExampleListing } from "@/types/api";
+import type { ExampleListing } from "../../types/api";
 
 interface ExampleButtonsProps {
   examples: ExampleListing[];

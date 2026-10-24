@@ -1,5 +1,5 @@
 import React from "react";
-import { Confidence } from "@/types/api";
+import type { Confidence } from "@/types/api";
 import { Badge } from "./Badge";
 import { getConfidenceText } from "@/lib/labels";
 

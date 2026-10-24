@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { startInvestigation, getExamples, ApiClientError } from "@/api/client";
-import { ExampleListing } from "@/types/api";
+import type { ExampleListing } from "../types/api";
 import { ListingInput } from "@/components/home/ListingInput";
 import { ExampleButtons } from "@/components/home/ExampleButtons";
 import { SupportedPortals } from "@/components/home/SupportedPortals";
@@ -30,7 +30,11 @@ export const HomePage: React.FC = () => {
     setBusy(true);
     setApiError(null);
     try {
-      const res = await startInvestigation({ url, force_refresh: false });
+      const res = await startInvestigation({
+  url: url.trim(),
+  replay_example_id: null,
+  force_refresh: false,
+});
       navigate(`/investigate/${res.report_id}`);
     } catch (err) {
       if (err instanceof ApiClientError) {
@@ -47,7 +51,11 @@ export const HomePage: React.FC = () => {
     setBusy(true);
     setApiError(null);
     try {
-      const res = await startInvestigation({ replay_example_id: example.example_id, force_refresh: false });
+      const res = await startInvestigation({
+  url: null,
+  replay_example_id: example.example_id,
+  force_refresh: false,
+});
       navigate(`/investigate/${res.report_id}`);
     } catch (err) {
       if (err instanceof ApiClientError) {
