@@ -2,6 +2,7 @@ import uuid
 from fastapi import APIRouter, HTTPException, BackgroundTasks, status
 from sse_starlette.sse import EventSourceResponse
 
+from app.core.config import get_settings
 from app.core.errors import ProofRentError
 from app.schemas import (
     InvestigateRequest, 
@@ -17,7 +18,7 @@ from app.services.orchestrator import (
     run_investigation, 
     get_report_by_id
 )
-from app.services.replay import load_replay_report
+from app.services.replay import load_replay_report, replay_events
 from app.db.repository import save_decision
 
 router = APIRouter(prefix="/api", tags=["investigations"])
@@ -26,6 +27,14 @@ router = APIRouter(prefix="/api", tags=["investigations"])
 @router.post("/investigations", response_model=InvestigateResponse)
 async def start_investigation(req: InvestigateRequest, background_tasks: BackgroundTasks):
     """Start a new investigation background job or serve from replay."""
+    settings = get_settings()
+
+    # Global offline mock mode fallback
+    if settings.mock_mode:
+        example_id = req.replay_example_id or "match"
+        report_id = f"replay_{example_id}"
+        return InvestigateResponse(report_id=report_id, cached=True, is_replay=True)
+
     if req.replay_example_id:
         report_id = f"replay_{req.replay_example_id}"
         return InvestigateResponse(report_id=report_id, cached=True, is_replay=True)
@@ -72,6 +81,18 @@ async def get_report(report_id: str):
 @router.get("/reports/{report_id}/events")
 async def stream_report_events(report_id: str):
     """Server-Sent Events endpoint streaming real-time job log events."""
+    if report_id.startswith("replay_"):
+        example_id = report_id.replace("replay_", "")
+
+        async def replay_generator():
+            async for event in replay_events(example_id, report_id, delay_seconds=0.3):
+                yield {
+                    "event": event.type,
+                    "data": event.model_dump_json()
+                }
+
+        return EventSourceResponse(replay_generator())
+
     manager = get_manager()
 
     async def event_generator():

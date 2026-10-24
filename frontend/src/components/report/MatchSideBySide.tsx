@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import type { ListingFields, UserDecision, SourceRef } from '../../types/api';
 import { SignalChips } from './SignalChips';
 import { PriceGapBadge } from './PriceGapBadge';
@@ -13,11 +14,12 @@ function getText(val: any): string {
 interface MatchSideBySideProps {
   listing: ListingFields;
   candidate: any;
-  onDecision: (candidateId: string, d: UserDecision) => void;
+  onDecision: (candidateId: string, d: UserDecision) => Promise<void> | void;
   onOpenEvidence: (source: SourceRef) => void;
 }
 
 export function MatchSideBySide({ listing, candidate, onDecision, onOpenEvidence }: MatchSideBySideProps) {
+  const [savingDecision, setSavingDecision] = useState<boolean>(false);
   const currentDecision = candidate?.user_decision || 'unreviewed';
 
   const listingTitle = getText((listing as any)?.title) || 'Submitted Listing';
@@ -28,6 +30,17 @@ export function MatchSideBySide({ listing, candidate, onDecision, onOpenEvidence
 
   const listingImg = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80';
   const candidateImg = candidate?.screenshot_url || 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80';
+
+  const handleDecisionClick = async (decision: UserDecision) => {
+    setSavingDecision(true);
+    try {
+      await onDecision(candidate.candidate_id, decision);
+    } catch (err) {
+      console.error('Failed to register decision:', err);
+    } finally {
+      setSavingDecision(false);
+    }
+  };
 
   return (
     <div className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-6">
@@ -48,25 +61,27 @@ export function MatchSideBySide({ listing, candidate, onDecision, onOpenEvidence
         <div className="flex items-center gap-2 bg-[#FAF8F5] p-1.5 rounded-2xl border border-[#F4EFEA]">
           <button
             type="button"
-            onClick={() => onDecision(candidate.candidate_id, 'confirm' as UserDecision)}
-            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-              currentDecision === 'confirm'
+            disabled={savingDecision}
+            onClick={() => handleDecisionClick('confirmed')}
+            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all disabled:opacity-50 ${
+              currentDecision === 'confirmed'
                 ? 'bg-[#1A261C] text-white shadow-sm'
                 : 'text-[#1A261C]/70 hover:bg-[#F4EFEA]'
             }`}
           >
-            ✓ Confirm Match
+            {savingDecision && currentDecision !== 'confirmed' ? 'Saving...' : '✓ Confirm Match'}
           </button>
           <button
             type="button"
-            onClick={() => onDecision(candidate.candidate_id, 'reject' as UserDecision)}
-            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all ${
-              currentDecision === 'reject'
+            disabled={savingDecision}
+            onClick={() => handleDecisionClick('rejected')}
+            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all disabled:opacity-50 ${
+              currentDecision === 'rejected'
                 ? 'bg-[#B80D1D] text-white shadow-sm'
                 : 'text-[#1A261C]/70 hover:bg-[#B80D1D]/10'
             }`}
           >
-            ✕ Reject
+            {savingDecision && currentDecision !== 'rejected' ? 'Saving...' : '✕ Reject'}
           </button>
         </div>
       </div>
@@ -198,7 +213,7 @@ export function MatchSideBySide({ listing, candidate, onDecision, onOpenEvidence
             {candidate.url && (
               <button
                 type="button"
-                onClick={() => onOpenEvidence({ url: candidate.url, platform: candidate.source_platform } as any)}
+                onClick={() => onOpenEvidence({ url: candidate.url, portal: candidate.source_platform } as any)}
                 className="w-full py-2.5 px-4 rounded-xl border border-[#B80D1D] text-[#B80D1D] hover:bg-[#B80D1D] hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2"
               >
                 <span>View Full Listing Evidence</span>
@@ -222,4 +237,4 @@ export function MatchSideBySide({ listing, candidate, onDecision, onOpenEvidence
       )}
     </div>
   );
-}   
+}
