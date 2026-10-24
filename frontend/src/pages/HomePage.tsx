@@ -13,7 +13,7 @@ const FEATURES = [
 ];
 
 const EXAMPLES: { id: ExampleId; label: string }[] = [
-  { id: 'match', label: '🛡️ Safe Fallback Full Audit' },
+  { id: 'match', label: '🔍 Price Gap Example' },
   { id: 'hidden_fees', label: '🧾 Extra Fees Example' },
   { id: 'no_match', label: '✅ No Match Example' },
   { id: 'blocked', label: '🚧 Blocked Portal Example' },
@@ -28,27 +28,26 @@ export function HomePage() {
     if (err instanceof ApiClientError) {
       setError(err.error.message + (err.error.next_step ? ' ' + err.error.next_step : ''));
     } else {
-      setError('Could not reach backend. Ensure backend is running on http://localhost:8000.');
+      setError('Could not reach the backend. Is it running on http://localhost:8000?');
     }
   };
 
-   const handleAnalyzeUrl = async (url: string) => {
-      setAnalyzing(true);
-      setError(null);
-      try {
-        const res = await startInvestigation({
-          url,
-          replay_example_id: null,
-          force_refresh: false,
-        });
-        // Navigates to middle loading screen
-        navigate(`/investigate/${res.report_id}`);
-      } catch (err: unknown) {
-        showError(err);
-      } finally {
-        setAnalyzing(false);
-      }
-    };
+  const handleAnalyzeUrl = async (url: string) => {
+    setAnalyzing(true);
+    setError(null);
+    try {
+      const res = await startInvestigation({
+        url,
+        replay_example_id: null,
+        force_refresh: false,
+      });
+      navigate(`/investigate/${res.report_id}`);
+    } catch (err: unknown) {
+      showError(err);
+    } finally {
+      setAnalyzing(false);
+    }
+  };
 
   const handlePickExample = async (exampleId: ExampleId) => {
     setError(null);
@@ -66,13 +65,13 @@ export function HomePage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      {/* Hero Header */}
+      {/* Hero */}
       <section className="relative rounded-[2rem] bg-gradient-to-br from-white via-[#FAF8F5] to-[#F6E9E6] border border-[#F4EFEA] p-8 lg:p-12 shadow-luxury overflow-hidden">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-7 space-y-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-[#B80D1D]/20 text-[#B80D1D] text-xs font-bold tracking-wide shadow-sm">
               <span className="w-2 h-2 rounded-full bg-[#B80D1D]" />
-              <span>Rental Cost Verification Engine</span>
+              <span>Rent cost verification engine</span>
             </div>
 
             <h1 className="text-4xl lg:text-5xl font-extrabold text-[#1A261C] font-display tracking-tight leading-[1.1]">
@@ -92,8 +91,8 @@ export function HomePage() {
             </div>
 
             <div className="space-y-2 pt-1">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A261C]/50 block">
-                Instant Safe Demo Fallback Runs
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#1A261C]/40 block">
+                Try a recorded example
               </span>
               <div className="flex flex-wrap gap-2">
                 {EXAMPLES.map((ex) => (
@@ -110,7 +109,7 @@ export function HomePage() {
             </div>
           </div>
 
-          {/* Card Preview */}
+          {/* Illustration card */}
           <div className="lg:col-span-5 flex justify-center">
             <div className="w-full max-w-sm rounded-3xl bg-white/80 backdrop-blur border border-[#F4EFEA] shadow-luxury p-5 space-y-4">
               <div className="flex items-center justify-between">
@@ -152,7 +151,7 @@ export function HomePage() {
         </div>
       </section>
 
-      {/* Features List */}
+      {/* Feature cards */}
       <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {FEATURES.map((f) => (
           <div

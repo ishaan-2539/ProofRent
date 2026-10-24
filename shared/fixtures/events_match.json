@@ -1,13 +1,1 @@
-[
-  {"report_id": "report_match", "type": "started", "ts": "2026-10-24T15:54:22Z", "message": "Starting investigation of Magicbricks listing", "portal": "magicbricks"},
-  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T15:54:23Z", "message": "Reading raw DOM and text with TinyFish Web Agent...", "portal": "magicbricks"},
-  {"report_id": "report_match", "type": "stream_url", "ts": "2026-10-24T15:54:24Z", "message": "Extracted primary listing details", "portal": "magicbricks", "stream_url": null, "screenshot_url": "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:25Z", "message": "Extracted primary listing details", "module": "listing"},
-  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T15:54:26Z", "message": "Searching HexaHome, GoPGo, and PGdekho for duplicate listings..."},
-  {"report_id": "report_match", "type": "stream_url", "ts": "2026-10-24T15:54:27Z", "message": "Captured candidate page on HexaHome", "portal": "hexahome", "stream_url": null, "screenshot_url": "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:28Z", "message": "Identified cross-portal price gap (₹7,000 vs ₹8,000)", "module": "matching"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:29Z", "message": "Calculated real cost ladder and move-in obligations", "module": "cost"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:30Z", "message": "Evaluated localized market fair price benchmark", "module": "fair_price"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:31Z", "message": "Generated tenant negotiation playbook questions", "module": "questions"},
-  {"report_id": "report_match", "type": "completed", "ts": "2026-10-24T15:54:32Z", "message": "Investigation complete. Evidence-based report compiled."}
-]
+[]
