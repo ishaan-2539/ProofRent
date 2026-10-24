@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from app.core.constants import get_constants
+from app.api.routes_system import router as system_router
+from app.api.routes_investigations import router as investigations_router
 
 settings = get_settings()
 constants = get_constants()
@@ -16,9 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.get("/api/health")
-async def health_check():
-    return {
-        "ok": True,
-        "contract_version": constants.get("contract_version", "1.0")
-    }
+app.include_router(system_router)
+app.include_router(investigations_router)
+
+
+@app.get("/")
+async def root():
+    return {"message": "ProofRent API active"}
