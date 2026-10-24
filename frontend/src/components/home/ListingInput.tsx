@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { validateListingInput } from "@/lib/validators";
+import { validateListingInput } from "../../lib/validators";
 import { Button } from "../common/Button";
 
 interface ListingInputProps {
