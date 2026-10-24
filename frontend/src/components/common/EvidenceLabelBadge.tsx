@@ -1,5 +1,5 @@
 import React from "react";
-import { EvidenceLabel } from "@/types/api";
+import type { EvidenceLabel } from "@/types/api";
 import { Badge } from "./Badge";
 import { getEvidenceLabelText } from "@/lib/labels";
 

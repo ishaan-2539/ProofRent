@@ -1,5 +1,5 @@
 import React from 'react';
-import { Finding, SourceRef } from '../../types/api';
+import type { Finding, SourceRef } from '../../types/api';
 
 function EvidenceLabelBadge({ label }: { label: string }) {
   return (

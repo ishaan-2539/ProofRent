@@ -1,5 +1,5 @@
 import React from "react";
-import { ModuleStatus } from "@/types/api";
+import type { ModuleStatus } from "@/types/api";
 import { Button } from "./Button";
 import { Spinner } from "./Spinner";
 
