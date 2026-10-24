@@ -1,4 +1,4 @@
-import React from 'react';
+
 import type { Finding, SourceRef } from '../../types/api';
 function EvidenceLabelBadge({ label }: { label: string }) {
   return (
