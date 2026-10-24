@@ -9,7 +9,7 @@ import type { PortalId } from "@/types/api";
 
 export function InvestigatePage() {
   const { report_id } = useParams<{ report_id: string }>();
-  const { report, events, loading, error, setReport } = useInvestigationStream(report_id);
+  const { report, events, loading, error } = useInvestigationStream(report_id || "demo");
 
   if (loading) {
     return (
@@ -59,7 +59,7 @@ export function InvestigatePage() {
       ];
 
   const handleRefetch = async () => {
-    setReport({ ...report });
+    // Stream updates state automatically when events arrive
   };
 
   return (
@@ -80,7 +80,7 @@ export function InvestigatePage() {
                 Live Run ID:
               </span>
               <span className="text-[11px] font-mono font-bold text-[#B80D1D] bg-[#B80D1D]/5 border border-[#B80D1D]/20 px-2 py-0.5 rounded-md">
-                {report_id}
+                {report_id || "demo"}
               </span>
             </div>
             <h1 className="text-base font-extrabold text-[#1A261C] tracking-tight">
