@@ -18,7 +18,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+/lib/
 lib64/
 parts/
 sdist/
@@ -35,4 +35,6 @@ dist/
 
 backend/repomix-output.md
 
-repomix-output.md
+# Prevent git from ignoring lib folders inside src
+!src/**/lib/
+!src/**/lib/**
