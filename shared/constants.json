@@ -1,0 +1,48 @@
+{
+  "contract_version": "1.0",
+  "portals": [
+    {"id": "magicbricks",     "display_name": "Magicbricks", "domains": ["magicbricks.com"], "fetch_strategy": "fetch"},
+    {"id": "pgdekho",         "display_name": "PGdekho",     "domains": ["pgdekho.com"],     "fetch_strategy": "fetch"},
+    {"id": "nobroker",        "display_name": "NoBroker",    "domains": ["nobroker.in"],     "fetch_strategy": "fetch"},
+    {"id": "housing",         "display_name": "Housing.com", "domains": ["housing.com"],     "fetch_strategy": "fetch"},
+    {"id": "gopgo",           "display_name": "GoPGo",       "domains": ["gopgo.in"],        "fetch_strategy": "fetch"},
+    {"id": "hexahome",        "display_name": "HexaHome",    "domains": ["hexahome.in"],     "fetch_strategy": "fetch"},
+    {"id": "ninetynineacres", "display_name": "99acres",     "domains": ["99acres.com"],     "fetch_strategy": "agent"}
+  ],
+  "thresholds": {
+    "global_time_budget_seconds": 90,
+    "agent_concurrency": 2,
+    "agent_max_duration_seconds": 300,
+    "min_comparable_listings": 5,
+    "max_candidates_shown": 3,
+    "location_match_max_distance_m": 100,
+    "name_similarity_min": 85,
+    "shared_sentence_min_words": 8,
+    "photo_hash_max_distance": 8,
+    "fair_price_near_band_pct": 10
+  },
+  "visible_assumptions": [
+    {"key": "deposit_months_as_listed", "text": "Deposit taken as the number of months the listing states."},
+    {"key": "brokerage_zero_to_one_month", "text": "Brokerage assumed between 0 and 1 month's rent unless the listing says otherwise.", "months_min": 0, "months_max": 1}
+  ],
+  "banned_words": ["scam", "fraud", "fake", "cheat"],
+  "evidence_labels": {"verified": "Verified", "inferred": "Inferred", "uncertain": "Uncertain", "unknown": "Unknown"},
+  "cost_labels": {"listed": "Listed", "assumed": "Assumed", "unknown": "Unknown"},
+  "confidence_labels": {"high": "High", "medium": "Medium", "low": "Low"},
+  "default_questions": [
+    "How many days after I leave is the deposit refunded?",
+    "What is the notice period, and is any rent forfeited?",
+    "How is electricity billed (metered, per-unit rate, or fixed)?"
+  ],
+  "error_messages": {
+    "INVALID_URL": "Paste the full link, starting with https://",
+    "UNSUPPORTED_PORTAL": "ProofRent supports {portals} for now.",
+    "SALE_LISTING": "This looks like a sale listing. ProofRent checks rentals and PGs.",
+    "LOGIN_REQUIRED": "This page needs a login. ProofRent reads public pages only.",
+    "LISTING_REMOVED": "This listing appears to be removed. Worth asking whether the place is still available.",
+    "REDIRECT_UNRESOLVED": "We couldn't open that short link. Please paste the direct listing link.",
+    "POLICY_BLOCKED": "This link can't be investigated.",
+    "RATE_LIMITED": "We're busy right now. Retrying shortly.",
+    "INTERNAL": "Couldn't compute this part. You can retry."
+  }
+}

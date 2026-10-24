@@ -1,2 +1,6 @@
-# ProofRent
-ProofRent — Team Noventra
+# ProofRent — Know before you sign
+
+## Run Commands
+- Backend: `cd backend && uvicorn app.main:app --reload --port 8000`
+- Frontend: `cd frontend && npm run dev`
+- Tests: `cd backend && pytest`
