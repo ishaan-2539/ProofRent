@@ -38,3 +38,4 @@ backend/repomix-output.md
 # Prevent git from ignoring lib folders inside src
 !src/**/lib/
 !src/**/lib/**
+repomix-output.md

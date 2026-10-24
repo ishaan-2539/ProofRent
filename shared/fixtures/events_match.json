@@ -1,11 +1,1 @@
-[
-  {"report_id": "report_match", "type": "started", "ts": "2026-10-24T14:10:00Z", "message": "Starting investigation for Aggarwal PG"},
-  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T14:10:02Z", "message": "Fetching source listing from GoPGo"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T14:10:05Z", "message": "Extracted listing details", "module": "listing"},
-  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T14:10:07Z", "message": "Searching public portals for matching listings"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T14:10:15Z", "message": "Matched listing on Magicbricks", "module": "matching"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T14:10:18Z", "message": "Calculated real cost breakdown", "module": "cost"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T14:10:20Z", "message": "Compared local market prices", "module": "fair_price"},
-  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T14:10:22Z", "message": "Generated renter question list", "module": "questions"},
-  {"report_id": "report_match", "type": "completed", "ts": "2026-10-24T14:10:23Z", "message": "Investigation complete"}
-]
+[]

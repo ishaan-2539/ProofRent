@@ -1,9 +1,18 @@
 from fastapi import APIRouter
+
 from app.clients.tinyfish import get_tinyfish_client
 from app.core.constants import get_constants
-from app.schemas import ExampleListing, PreflightResult, WalletInfo
+from app.core.errors import ProofRentError
+from app.schemas import ExampleListing, PreflightCheck, PreflightResult, WalletInfo
+from app.services.preflight import run_preflight
+from app.services.replay import list_examples
 
 router = APIRouter(prefix="/api", tags=["system"])
+
+# A real page from your 20 Oct trial. Used only to prove Fetch works end to end.
+FETCH_PROBE_URL = (
+    "https://www.gopgo.in/new-delhi/govindpuri-kalkaji/pg/7121-agarwal-pg-house/pgo-properties"
+)
 
 
 @router.get("/health")
@@ -14,41 +23,54 @@ async def health_check():
 
 @router.get("/wallet", response_model=WalletInfo)
 async def check_wallet():
-    """Check remaining TinyFish API balance."""
-    client = get_tinyfish_client()
-    return await client.get_wallet()
+    """Confirms the TinyFish key works (see TinyFishClient.get_wallet)."""
+    return await get_tinyfish_client().get_wallet()
 
 
 @router.get("/examples", response_model=list[ExampleListing])
 async def get_examples():
-    """Return cached example listings for rapid replay/demo testing."""
-    return [
-        ExampleListing(
-            example_id="match",
-            title="Aggarwal PG, Govindpuri",
-            description="Twin sharing AC room listing on Magicbricks",
-            url="https://www.magicbricks.com/propertyDetail/aggarwal-paying-guest-pg-govindpuri-in-new-delhi&pgid=4d42333331303339677261646532",
-            portal="magicbricks"
-        ),
-        ExampleListing(
-            example_id="no_match",
-            title="Sunny PG Kalkaji",
-            description="Single room listing with no duplicates across portals",
-            url="https://www.magicbricks.com/propertyDetail/sunny-pg-kalkaji",
-            portal="magicbricks"
-        ),
-        ExampleListing(
-            example_id="hidden_fees",
-            title="Mathur PG Govindpuri",
-            description="Listing with unstated electricity and maintenance charges",
-            url="https://pgdekho.com/pg-in-govindpuri-delhi",
-            portal="pgdekho"
-        ),
-        ExampleListing(
-            example_id="blocked",
-            title="99acres Premium Flat",
-            description="Listing requiring stealth agent navigation",
-            url="https://www.99acres.com/pg-in-delhi",
-            portal="ninetynineacres"
+    """One source of truth: services/replay.py."""
+    return list_examples()
+
+
+@router.get("/preflight", response_model=PreflightResult)
+async def preflight():
+    """Base checks (db, fixtures, llm) plus live TinyFish Search and Fetch checks."""
+    base = await run_preflight()
+    checks = list(base.checks)
+    tf = get_tinyfish_client()
+
+    try:
+        hits = await tf.search("aggarwal pg govindpuri delhi")
+        checks.append(
+            PreflightCheck(
+                name="tinyfish_search",
+                ok=len(hits) > 0,
+                detail=f"Search returned {len(hits)} results.",
+            )
         )
-    ]
+    except ProofRentError as e:
+        checks.append(PreflightCheck(name="tinyfish_search", ok=False, detail=e.message))
+    except Exception as e:  # never let preflight crash
+        checks.append(PreflightCheck(name="tinyfish_search", ok=False, detail=str(e)))
+
+    try:
+        pages = await tf.fetch([FETCH_PROBE_URL])
+        page = pages[0] if pages else None
+        ok = bool(page and page.ok)
+        detail = (
+            f"Fetched {len(page.text)} characters from GoPGo."
+            if ok
+            else f"Fetch returned no content ({page.error_code if page else 'no result'})."
+        )
+        checks.append(PreflightCheck(name="tinyfish_fetch", ok=ok, detail=detail))
+    except ProofRentError as e:
+        checks.append(PreflightCheck(name="tinyfish_fetch", ok=False, detail=e.message))
+    except Exception as e:
+        checks.append(PreflightCheck(name="tinyfish_fetch", ok=False, detail=str(e)))
+
+    return PreflightResult(
+        all_ok=all(c.ok for c in checks),
+        checked_at=base.checked_at,
+        checks=checks,
+    )

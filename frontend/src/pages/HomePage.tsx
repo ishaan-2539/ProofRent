@@ -1,17 +1,25 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ListingInput } from '../components/home/ListingInput';
-import { startInvestigation } from '../api/client';
+import { startInvestigation, ApiClientError } from '../api/client';
+import type { ExampleId } from '../types/api';
 
 export function HomePage() {
   const navigate = useNavigate();
   const [analyzing, setAnalyzing] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const showError = (err: unknown) => {
+    if (err instanceof ApiClientError) {
+      setError(err.error.message + (err.error.next_step ? ' ' + err.error.next_step : ''));
+    } else {
+      setError('Could not reach the backend. Is it running on http://localhost:8000?');
+    }
+  };
+
   const handleAnalyzeUrl = async (url: string) => {
     setAnalyzing(true);
     setError(null);
-
     try {
       const res = await startInvestigation({
         url,
@@ -20,15 +28,24 @@ export function HomePage() {
       });
       navigate(`/investigate/${res.report_id}`);
     } catch (err: unknown) {
-      console.warn("API request failed, navigating to demo investigation fallback:", err);
-      navigate('/investigate/demo');
+      showError(err);
     } finally {
       setAnalyzing(false);
     }
   };
 
-  const handlePickExample = (exampleId: string) => {
-    navigate(`/investigate/example-${exampleId}`);
+  const handlePickExample = async (exampleId: ExampleId) => {
+    setError(null);
+    try {
+      const res = await startInvestigation({
+        url: null,
+        replay_example_id: exampleId,
+        force_refresh: false,
+      });
+      navigate(`/investigate/${res.report_id}`);
+    } catch (err: unknown) {
+      showError(err);
+    }
   };
 
   return (
@@ -56,7 +73,7 @@ export function HomePage() {
             System Status
           </Link>
           <Link
-            to="/investigate/demo"
+            to="/investigate/replay_match"
             className="text-xs font-bold text-[#1A261C] hover:bg-[#F4EFEA] border border-[#F4EFEA] px-4 py-2 rounded-xl transition-all shadow-sm"
           >
             Explore Demo Audit ↗
@@ -111,6 +128,20 @@ export function HomePage() {
                     className="px-3 py-1.5 bg-white border border-[#F4EFEA] hover:border-[#1A261C]/30 rounded-xl text-xs font-semibold text-[#1A261C] transition-all"
                   >
                     🧾 Hidden Fees Example
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePickExample('no_match')}
+                    className="px-3 py-1.5 bg-white border border-[#F4EFEA] hover:border-[#1A261C]/30 rounded-xl text-xs font-semibold text-[#1A261C] transition-all"
+                  >
+                    ✅ No Match Example
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handlePickExample('blocked')}
+                    className="px-3 py-1.5 bg-white border border-[#F4EFEA] hover:border-[#1A261C]/30 rounded-xl text-xs font-semibold text-[#1A261C] transition-all"
+                  >
+                    🚧 Blocked Portal Example
                   </button>
                 </div>
               </div>

@@ -1,19 +1,23 @@
 import asyncio
 import json
 from pathlib import Path
-from typing import AsyncIterator, List
+from typing import AsyncIterator, List, Optional
 
 from app.schemas import ExampleId, ExampleListing, JobEvent, Report
 
 FIXTURES_DIR = Path(__file__).parent.parent.parent.parent / "shared" / "fixtures"
 
+# NOTE: single source of truth for the example list (routes_system.py uses this).
+# Only "match" points at a real listing (the Aggarwal PG Magicbricks page from the
+# 20 Oct trial). The other three still use the original fixture URLs: replace them
+# with real listing links after you export real runs (see scripts/export_fixtures.py).
 EXAMPLES: List[ExampleListing] = [
     ExampleListing(
         example_id="match",
-        title="Aggarwal PG (Price Gap Match)",
-        description="Aggarwal PG in Govindpuri listed on GoPGo at ₹8,000 and Magicbricks at ₹7,500.",
-        url="https://gopgo.in/listing/aggarwal-pg-govindpuri",
-        portal="gopgo",
+        title="Aggarwal Paying Guest, Govindpuri",
+        description="Same operator appears on Magicbricks, PGdekho, GoPGo and HexaHome at different rents.",
+        url="https://www.magicbricks.com/propertyDetail/aggarwal-paying-guest-pg-govindpuri-in-new-delhi&pgid=4d42333331303339677261646532",
+        portal="magicbricks",
     ),
     ExampleListing(
         example_id="no_match",
@@ -25,22 +29,36 @@ EXAMPLES: List[ExampleListing] = [
     ExampleListing(
         example_id="hidden_fees",
         title="Mathur PG (Hidden Fee Ladder)",
-        description="Stated rent ₹9,000, but mandatory food (₹2,500) and maintenance (₹1,000) added.",
+        description="Stated rent plus mandatory food and maintenance added on top.",
         url="https://housing.com/in/buy/resale/page/102938",
         portal="housing",
     ),
     ExampleListing(
         example_id="blocked",
         title="99acres Listing (Blocked Portal)",
-        description="Demonstrates non-happy state when portal requires CAPTCHA/bot verification.",
+        description="Shows the non-happy state when a portal blocks automated access.",
         url="https://99acres.com/pg-in-delhi-ncr-ffid",
         portal="ninetynineacres",
     ),
 ]
 
 
+def _norm(url: str) -> str:
+    return url.strip().lower().rstrip("/")
+
+
 def list_examples() -> List[ExampleListing]:
     return EXAMPLES
+
+
+def example_id_for_url(url: Optional[str]) -> Optional[ExampleId]:
+    """Return the example whose URL equals `url`, else None."""
+    if not url:
+        return None
+    for ex in EXAMPLES:
+        if _norm(ex.url) == _norm(url):
+            return ex.example_id
+    return None
 
 
 def load_replay_report(example_id: ExampleId) -> Report:

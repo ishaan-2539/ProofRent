@@ -35,16 +35,14 @@ class LLMClient:
                         code="INTERNAL",
                         message=f"Unsupported LLM provider: {self.provider}",
                     )
+            # Inside app/clients/llm.py:
             except Exception as e:
-                logger.warning(f"LLM extraction attempt {attempt + 1} failed: {e}")
-                if attempt == 1:
-                    if isinstance(e, ProofRentError):
-                        raise e
-                    raise ProofRentError(
-                        code="INTERNAL",
-                        message="Failed to extract structured data from listing page.",
-                        next_step="Try running the investigation again.",
-                    ) from e
+                logger.error(f"Gemini LLM extraction failed: {e}")
+                raise ProofRentError(
+                    code="INTERNAL",
+                    custom_message="Failed to extract structured data from listing page.",
+                    next_step="Try running the investigation again.",
+                ) from e
 
         raise ProofRentError(code="INTERNAL", message="LLM extraction max retries reached.")
 
