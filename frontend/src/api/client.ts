@@ -79,16 +79,21 @@ export function getPdfUrl(reportId: string): string {
 
 export async function submitDecision(
   reportId: string,
-  body: { verdict: string; notes?: string }
+  body: {
+    verdict?: string;
+    notes?: string;
+    candidate_id?: string;
+    decision?: "confirm" | "reject" | "flag" | string;
+  }
 ): Promise<void> {
-  const res = await fetch(`${BASE_URL}/api/investigations/${reportId}/decision`, {
+  const res = await fetch(`${BASE_URL}/api/reports/${reportId}/decision`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
 
   if (!res.ok) {
-    throw new Error(`Failed to submit review decision (${res.status})`);
+    throw new Error(`Failed to submit decision (${res.status})`);
   }
 }
 

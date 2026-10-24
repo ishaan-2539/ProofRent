@@ -5,14 +5,12 @@ interface CostLadderViewProps {
   onOpenEvidence?: (source: SourceRef) => void;
 }
 
-export function CostLadderView({ ladder, onOpenEvidence }: CostLadderViewProps) {
-  if (!ladder) return null;
-
-  const headline = ladder.headline || 'Move-in & Monthly Financial Obligations';
-  const totalFirstMonth = ladder.total_first_month || 0;
-  const monthlyRecurring = ladder.monthly_recurring || 0;
-  const items = ladder.items || [];
-
+export function CostLadderView({ ladder }: CostLadderViewProps) {
+  const ladderAny = ladder as any;
+  const totalFirstMonth = ladderAny?.total_first_month ?? ladderAny?.totalFirstMonth ?? 0;
+  const monthlyRecurring = ladderAny?.monthly_recurring ?? ladderAny?.monthlyRecurring ?? 0;
+  const items = ladderAny?.items ?? ladderAny?.components ?? [];
+  const headline = ladderAny?.headline ?? "First Month vs Recurring Cost Audit";
   return (
     <div className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-6">
       {/* Header */}

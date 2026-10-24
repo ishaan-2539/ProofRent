@@ -149,13 +149,11 @@ export function ReportPage() {
     );
   }
 
-  const isComplete = report.status === "completed" || report.status === "failed";
+  // const isComplete = report.status === "completed" || report.status === "failed";
   
-  // Safe field extractions to handle type schema variations cleanly
-  const listingAny = report.listing as any;
-  const rentPrice = listingAny?.rent_price?.value ?? listingAny?.price?.value ?? listingAny?.rent?.value;
-  const rawTimestamp = (report as any).created_at || (report as any).captured_at || (report as any).timestamp;
-
+  // // Safe field extractions to handle type schema variations cleanly
+  // const listingAny = report.listing as any;
+  // const rentPrice = listingAny?.rent_price?.value ?? listingAny?.price?.value ?? listingAny?.rent?.value;
   return (
     <div className="min-h-screen bg-[#FAFAFC] p-4 sm:p-6 lg:p-8">
       {/* Top Navigation & Audit Header */}
