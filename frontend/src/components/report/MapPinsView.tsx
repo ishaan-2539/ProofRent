@@ -1,4 +1,3 @@
-import React from 'react';
 
 function formatDistance(m: number | null): string {
   if (m === null || m === undefined) return '—';

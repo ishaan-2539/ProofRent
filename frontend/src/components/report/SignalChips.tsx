@@ -1,5 +1,5 @@
-import React from 'react';
-import { FamilyResult, SignalFamily } from '../../types/api';
+
+import type { FamilyResult, SignalFamily } from '../../types/api';
 
 const FAMILY_LABELS: Record<SignalFamily, string> = {
   location: 'Location',
