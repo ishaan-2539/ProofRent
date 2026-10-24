@@ -1,75 +1,30 @@
 import type { FairPriceResult } from '../../types/api';
 
-interface FairPriceCardProps {
-  result: FairPriceResult;
-}
-
-export function FairPriceCard({ result }: FairPriceCardProps) {
+export function FairPriceCard({ result }: { result: FairPriceResult }) {
   if (!result) return null;
-
-  const res = result as any;
-  const verdict = res.verdict || 'fair';
-  const statedRent = res.stated_rent || res.statedRent || 0;
-  const fairMin = res.fair_min || res.fairMin || 0;
-  const fairMax = res.fair_max || res.fairMax || 0;
-  const message = res.message || '';
-
-  const verdictStyles =
-    verdict === 'overpriced'
-      ? { badgeBg: 'bg-[#B80D1D]', text: 'Overpriced vs Market', badgeText: 'text-white' }
-      : verdict === 'great_deal'
-      ? { badgeBg: 'bg-emerald-600', text: 'Great Deal', badgeText: 'text-white' }
-      : { badgeBg: 'bg-[#1A261C]', text: 'Fair Price', badgeText: 'text-white' };
+  const rupees = (n: number | null) => (n == null ? '—' : `₹${n.toLocaleString('en-IN')}`);
 
   return (
-    <div className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-[#F4EFEA]">
-        <div>
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#B80D1D]">
-            Algorithmic Benchmark
-          </span>
-          <h3 className="font-display font-extrabold text-lg text-[#1A261C]">
-            Fair Market Valuation
-          </h3>
-        </div>
-        <span
-          className={`text-xs font-bold px-3 py-1 rounded-full shadow-sm ${verdictStyles.badgeBg} ${verdictStyles.badgeText}`}
-        >
-          {verdictStyles.text}
+    <div className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="font-display font-extrabold text-lg text-[#1A261C]">Fair Price Check</h3>
+        <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#1A261C] text-white capitalize">
+          {result.status === 'ok' ? `${result.position} median` : 'Not enough data'}
         </span>
       </div>
-
-      {/* Price Comparison Grid */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#F4EFEA]">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#1A261C]/50 block">
-            Stated Rent Quote
-          </span>
-          <div className="font-display text-2xl font-extrabold text-[#1A261C] mt-1">
-            ₹{Number(statedRent).toLocaleString('en-IN')}
+      {result.status === 'ok' && (
+        <div className="grid grid-cols-2 gap-4">
+          <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#F4EFEA]">
+            <span className="text-[10px] font-mono uppercase text-[#1A261C]/50 block">This listing</span>
+            <div className="font-display text-2xl font-extrabold">{rupees(result.listing_rent)}</div>
           </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E9DEC3]">
-          <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-[#B80D1D] block">
-            Estimated Fair Range
-          </span>
-          <div className="font-display text-lg font-extrabold text-[#B80D1D] mt-1">
-            ₹{Number(fairMin).toLocaleString('en-IN')} – ₹{Number(fairMax).toLocaleString('en-IN')}
+          <div className="p-4 rounded-2xl bg-[#FAF8F5] border border-[#E9DEC3]">
+            <span className="text-[10px] font-mono uppercase text-[#B80D1D] block">Median of {result.comparable_count} listings</span>
+            <div className="font-display text-2xl font-extrabold text-[#B80D1D]">{rupees(result.median_rent)}</div>
           </div>
-        </div>
-      </div>
-
-      {/* Message */}
-      {message && (
-        <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 flex items-start gap-3">
-          <span className="text-base shrink-0">💡</span>
-          <p className="text-xs text-amber-900 leading-relaxed font-medium">
-            {message}
-          </p>
         </div>
       )}
+      <p className="text-xs text-[#1A261C]/80">{result.message}</p>
     </div>
   );
 }

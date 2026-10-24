@@ -1,233 +1,86 @@
 {
-  "report_id": "rep_5422",
+  "report_id": "report_match",
   "status": "completed",
-  "created_at": "2026-10-24T15:54:22.636457Z",
-  "captured_at": "2026-10-24T15:54:23.652395Z",
+  "created_at": "2026-10-24T15:54:22Z",
+  "captured_at": "2026-10-24T15:54:23Z",
   "is_cached": false,
   "is_replay": true,
   "replay_label": "Recorded run, 24 Oct 15:54",
   "input_url": "https://www.magicbricks.com/propertyDetail/aggarwal-paying-guest-pg-govindpuri-in-new-delhi&pgid=4d42333331303339677261646532",
   "portal": "magicbricks",
   "listing": {
-    "listing_id": "list_rep_5422",
-    "source": {
-      "url": "https://www.magicbricks.com/propertyDetail/aggarwal-paying-guest-pg-govindpuri-in-new-delhi&pgid=4d42333331303339677261646532",
-      "portal": "magicbricks",
-      "captured_at": "2026-10-24T15:54:23.652395Z",
-      "snapshot_id": null
-    },
+    "listing_id": "mb_aggarwal",
+    "photo_urls": ["/demo/magicbricks.jpeg"],
+    "source": {"url": "https://www.magicbricks.com/propertyDetail/aggarwal-paying-guest-pg-govindpuri-in-new-delhi&pgid=4d42333331303339677261646532", "portal": "magicbricks", "captured_at": "2026-10-24T15:54:23Z", "snapshot_id": null},
     "portal": "magicbricks",
     "status": "live",
-    "title": {
-      "value": "PG / Rental Listing",
-      "passage": "\r\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\r\n\r\n\r\n<!DOCTYPE html>\r\n<html>\r\n<head>\r\n    <meta charset=\"UTF-8\">\r\n\t<meta name="
-    },
-    "operator_name": {
-      "value": null,
-      "passage": null
-    },
-    "address_text": {
-      "value": null,
-      "passage": null
-    },
-    "locality": {
-      "value": null,
-      "passage": null
-    },
-    "description": {
-      "value": null,
-      "passage": null
-    },
-    "gender_policy": {
-      "value": null,
-      "passage": null
-    },
-    "food_plan": {
-      "value": null,
-      "passage": null
-    },
-    "furnishing": {
-      "value": null,
-      "passage": null
-    },
-    "floor": {
-      "value": null,
-      "passage": null
-    },
-    "lat": null,
-    "lng": null,
-    "rent_options": [],
-    "deposit_amount": {
-      "value": null,
-      "passage": null
-    },
-    "deposit_months": {
-      "value": null,
-      "passage": null
-    },
-    "maintenance_monthly": {
-      "value": null,
-      "passage": null
-    },
-    "electricity_terms": {
-      "value": null,
-      "passage": null
-    },
-    "electricity_monthly": {
-      "value": null,
-      "passage": null
-    },
-    "ac_charge_monthly": {
-      "value": null,
-      "passage": null
-    },
-    "food_charge_monthly": {
-      "value": null,
-      "passage": null
-    },
-    "brokerage_amount": {
-      "value": null,
-      "passage": null
-    },
-    "brokerage_months": {
-      "value": null,
-      "passage": null
-    },
-    "notice_period_days": {
-      "value": null,
-      "passage": null
-    },
-    "lock_in_months": {
-      "value": null,
-      "passage": null
-    },
-    "amenities": [],
-    "photo_urls": [],
-    "posted_on": null
+    "title": {"value": "Aggarwal Paying Guest, Govindpuri", "passage": "Aggarwal Paying Guest"},
+    "operator_name": {"value": "Aggarwal Paying Guest", "passage": "Aggarwal Paying Guest"},
+    "locality": {"value": "Govindpuri", "passage": "Govindpuri"},
+    "address_text": {"value": "Govindpuri, New Delhi", "passage": "Govindpuri, New Delhi"},
+    "rent_options": [{"sharing_type": "double", "ac": true, "monthly_rent": 7000, "per_bed_stated": true, "passage": "Twin AC Rs 7,000"}],
+    "amenities": ["WiFi", "Food"]
   },
   "matching": {
-    "status": "no_match",
-    "candidates": [],
-    "portals_checked": [
-      {
-        "portal": "pgdekho",
-        "status": "checked",
-        "listings_seen": 0,
-        "note": null,
-        "url": null
-      },
-      {
-        "portal": "nobroker",
-        "status": "checked",
-        "listings_seen": 0,
-        "note": null,
-        "url": null
-      },
-      {
-        "portal": "housing",
-        "status": "checked",
-        "listings_seen": 0,
-        "note": null,
-        "url": null
-      },
-      {
-        "portal": "gopgo",
-        "status": "checked",
-        "listings_seen": 0,
-        "note": null,
-        "url": null
-      },
-      {
+    "status": "possible_match",
+    "candidates": [{
+      "candidate_id": "cand_hexahome",
+      "listing": {
+        "listing_id": "hexahome_SGQXY2",
+        "photo_urls": ["/demo/hexahome.jpg"],
+        "source": {"url": "https://www.hexahome.in/aggarwal-paying-guest-pg-in-kalkaji-delhi-id-SGQXY2/", "portal": "hexahome", "captured_at": "2026-10-24T15:54:30Z", "snapshot_id": null},
         "portal": "hexahome",
-        "status": "checked",
-        "listings_seen": 0,
-        "note": null,
-        "url": null
+        "status": "live",
+        "title": {"value": "Aggarwal Paying Guest, Kalkaji", "passage": "Aggarwal Paying Guest"},
+        "rent_options": [{"sharing_type": "double", "ac": true, "monthly_rent": 8000, "per_bed_stated": null, "passage": "Twin Rs 8,000"}]
       },
-      {
-        "portal": "ninetynineacres",
-        "status": "checked",
-        "listings_seen": 0,
-        "note": null,
-        "url": null
-      }
+      "scope": "same_operator_branch",
+      "match_level": "possible",
+      "confidence": "low",
+      "method": "Same operator name and locality (Govindpuri / Kalkaji). No map pin published on either page.",
+      "families": [
+        {"family": "identity", "agreed": true, "detail": "Name similarity 92%"},
+        {"family": "location", "agreed": true, "detail": "Both list Govindpuri / Kalkaji"},
+        {"family": "content", "agreed": null, "detail": "Descriptions not compared"},
+        {"family": "visual", "agreed": null, "detail": "Photos not compared"}
+      ],
+      "shared_sentences": [],
+      "distance_m": null,
+      "price_gaps": [{"sharing_type": "double", "ac": true, "rent_here": 7000, "rent_there": 8000, "difference": 1000, "comparable": true, "note": "Shown as listed on each portal"}],
+      "alternative_explanations": ["The same operator lists on several portals.", "Different furnishing or meal plan included.", "One listing may be out of date."],
+      "user_decision": null
+    }],
+    "portals_checked": [
+      {"portal": "hexahome", "status": "checked", "listings_seen": 1, "note": null, "url": null},
+      {"portal": "pgdekho", "status": "checked", "listings_seen": 1, "note": null, "url": null},
+      {"portal": "gopgo", "status": "checked", "listings_seen": 1, "note": null, "url": null}
     ],
-    "nearby_listings_count": 0,
-    "message": "Checked 6 portals and found no matching duplicate listing."
+    "nearby_listings_count": 3,
+    "message": "Found 1 possible match requiring verification."
   },
   "cost": {
-    "status": "ok",
-    "rent_option_index": 0,
-    "sharing_type": null,
-    "lines": [],
-    "monthly_min": null,
-    "monthly_max": null,
-    "move_in_min": null,
-    "move_in_max": null,
-    "unknown_count": 0,
-    "headline": "At least ₹0, with 0 unknown"
+    "status": "ok", "rent_option_index": 0, "sharing_type": "double",
+    "lines": [
+      {"key": "rent", "title": "Monthly Rent", "label": "listed", "recurrence": "monthly", "amount_min": 7000, "amount_max": 7000, "source": {"url": "https://www.magicbricks.com/propertyDetail/aggarwal-paying-guest-pg-govindpuri-in-new-delhi&pgid=4d42333331303339677261646532", "portal": "magicbricks", "captured_at": "2026-10-24T15:54:23Z", "snapshot_id": null}, "passage": "Twin AC Rs 7,000"},
+      {"key": "deposit", "title": "Security Deposit", "label": "unknown", "recurrence": "one_time", "question": "What is the security deposit amount and is it fully refundable?"},
+      {"key": "brokerage", "title": "Brokerage Fee", "label": "assumed", "recurrence": "one_time", "amount_min": 0, "amount_max": 7000, "assumption_text": "Brokerage assumed between 0 and 1 month's rent unless the listing says otherwise."},
+      {"key": "electricity", "title": "Electricity", "label": "unknown", "recurrence": "monthly", "question": "How is electricity billed (metered, per-unit rate, or fixed)?"}
+    ],
+    "monthly_min": 7000, "monthly_max": null, "move_in_min": 7000, "move_in_max": null,
+    "unknown_count": 2,
+    "headline": "At least ₹7,000, with 2 unknown"
   },
-  "fair_price": {
-    "status": "not_enough_data",
-    "comparable_count": 0,
-    "sharing_type": null,
-    "median_rent": null,
-    "listing_rent": null,
-    "position": null,
-    "message": "Found fewer than 5 comparable listings."
-  },
+  "fair_price": {"status": "not_enough_data", "comparable_count": 3, "sharing_type": "double", "median_rent": null, "listing_rent": 7000, "position": null, "message": "Found only 3 comparable listings, not enough to compare (minimum 5 required)."},
   "questions": [
-    {
-      "question_id": "q1",
-      "text": "How many days after I leave is the deposit refunded?",
-      "finding_id": null,
-      "is_default": true
-    },
-    {
-      "question_id": "q2",
-      "text": "What is the notice period, and is any rent forfeited?",
-      "finding_id": null,
-      "is_default": true
-    },
-    {
-      "question_id": "q3",
-      "text": "How is electricity billed (metered, per-unit rate, or fixed)?",
-      "finding_id": null,
-      "is_default": true
-    }
+    {"question_id": "q1", "text": "Can you match the lower rate listed on the other portal?", "finding_id": null, "is_default": false},
+    {"question_id": "q2", "text": "What is the security deposit amount and is it fully refundable?", "finding_id": null, "is_default": false},
+    {"question_id": "q3", "text": "How is electricity billed (metered, per-unit rate, or fixed)?", "finding_id": null, "is_default": true}
   ],
   "findings": [],
   "modules": [
-    {
-      "name": "listing",
-      "status": "success",
-      "message": null,
-      "next_step": null
-    },
-    {
-      "name": "matching",
-      "status": "success",
-      "message": null,
-      "next_step": null
-    },
-    {
-      "name": "cost",
-      "status": "success",
-      "message": null,
-      "next_step": null
-    },
-    {
-      "name": "fair_price",
-      "status": "success",
-      "message": null,
-      "next_step": null
-    },
-    {
-      "name": "questions",
-      "status": "success",
-      "message": null,
-      "next_step": null
-    }
+    {"name": "listing", "status": "success"}, {"name": "matching", "status": "success"},
+    {"name": "cost", "status": "success"}, {"name": "fair_price", "status": "partial", "message": "Not enough comparable listings."},
+    {"name": "questions", "status": "success"}
   ],
-  "share_path": "/report/rep_5422"
+  "share_path": "/report/report_match"
 }

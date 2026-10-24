@@ -2,238 +2,91 @@ import { useState } from 'react';
 import type { ListingFields, UserDecision, SourceRef } from '../../types/api';
 import { SignalChips } from './SignalChips';
 import { PriceGapBadge } from './PriceGapBadge';
-import { MapPinsView } from './MapPinsView';
 
-function getText(val: any): string {
-  if (!val) return '';
-  if (typeof val === 'string') return val;
-  if (typeof val === 'object' && val.value !== undefined) return String(val.value);
-  return '';
-}
+const val = (v: any) => (v && typeof v === 'object' && 'value' in v ? v.value : v);
+const rupees = (n: number | null | undefined) => (n == null ? '—' : `₹${n.toLocaleString('en-IN')}`);
 
-interface MatchSideBySideProps {
+interface Props {
   listing: ListingFields;
   candidate: any;
   onDecision: (candidateId: string, d: UserDecision) => Promise<void> | void;
   onOpenEvidence: (source: SourceRef) => void;
 }
 
-export function MatchSideBySide({ listing, candidate, onDecision, onOpenEvidence }: MatchSideBySideProps) {
-  const [savingDecision, setSavingDecision] = useState<boolean>(false);
-  const currentDecision = candidate?.user_decision || 'unreviewed';
+export function MatchSideBySide({ listing, candidate, onDecision, onOpenEvidence }: Props) {
+  const [saving, setSaving] = useState(false);
+  const decision = candidate?.user_decision;
+  const gap = candidate?.price_gaps?.[0];
+  const there: ListingFields = candidate.listing;
+  const dashed = candidate.match_level === 'possible' && decision !== 'confirmed';
 
-  const listingTitle = getText((listing as any)?.title) || 'Submitted Listing';
-  const listingAddress = getText((listing as any)?.address) || '1.2 km from shared location';
-
-  const candidateTitle = getText(candidate?.title) || 'Matched Listing Title';
-  const candidateAddress = getText(candidate?.address) || '1.1 km from shared location';
-
-  const listingImg = 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=800&q=80';
-  const candidateImg = candidate?.screenshot_url || 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=800&q=80';
-
-  const handleDecisionClick = async (decision: UserDecision) => {
-    setSavingDecision(true);
-    try {
-      await onDecision(candidate.candidate_id, decision);
-    } catch (err) {
-      console.error('Failed to register decision:', err);
-    } finally {
-      setSavingDecision(false);
-    }
+  const decide = async (d: UserDecision) => {
+    setSaving(true);
+    try { await onDecision(candidate.candidate_id, d); } finally { setSaving(false); }
   };
 
+  const Card = ({ label, l, rent }: { label: string; l: ListingFields; rent: number | null }) => (
+    <div className={`rounded-2xl p-5 bg-white space-y-3 border-2 ${dashed ? 'border-dashed border-[#B80D1D]/50' : 'border-[#F4EFEA]'}`}>
+      <span className="text-[10px] font-bold uppercase tracking-wider text-[#B80D1D]">{label}</span>
+      <h4 className="font-display font-bold text-base text-[#1A261C]">{val(l.title) || 'Listing'}</h4>
+      {l.photo_urls?.[0] && (
+          <img
+            src={l.photo_urls[0]}
+            alt={val(l.title) || 'Listing photo'}
+            className="w-full h-40 object-cover rounded-xl"
+            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+          />
+        )}
+      <p className="text-xs text-[#1A261C]/60">📍 {val(l.address_text) || val(l.locality) || 'Locality as listed'}</p>
+      <div className="p-3 rounded-xl bg-[#FAF8F5] border border-[#F4EFEA] flex justify-between items-baseline">
+        <span className="font-display text-2xl font-extrabold">{rupees(rent)}<span className="text-xs text-[#1A261C]/60"> / mo</span></span>
+        <span className="text-[11px] font-bold text-[#1A261C]/60 capitalize">{gap?.sharing_type} sharing</span>
+      </div>
+      {l.source?.url && (
+        <button type="button" onClick={() => onOpenEvidence(l.source)} className="text-xs font-bold text-[#B80D1D] hover:underline">
+          View source ↗
+        </button>
+      )}
+    </div>
+  );
+
   return (
-    <div className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-6">
-      {/* Top Header & Decision Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#F4EFEA]">
+    <div className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-[#B80D1D] animate-ping" />
-            <span className="text-xs font-bold uppercase tracking-wider text-[#B80D1D]">
-              Cross-Portal Duplicate Match
-            </span>
-          </div>
-          <h3 className="font-display font-extrabold text-xl text-[#1A261C] mt-1">
-            {candidateTitle}
-          </h3>
-        </div>
-
-        <div className="flex items-center gap-2 bg-[#FAF8F5] p-1.5 rounded-2xl border border-[#F4EFEA]">
-          <button
-            type="button"
-            disabled={savingDecision}
-            onClick={() => handleDecisionClick('confirmed')}
-            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all disabled:opacity-50 ${
-              currentDecision === 'confirmed'
-                ? 'bg-[#1A261C] text-white shadow-sm'
-                : 'text-[#1A261C]/70 hover:bg-[#F4EFEA]'
-            }`}
-          >
-            {savingDecision && currentDecision !== 'confirmed' ? 'Saving...' : '✓ Confirm Match'}
-          </button>
-          <button
-            type="button"
-            disabled={savingDecision}
-            onClick={() => handleDecisionClick('rejected')}
-            className={`px-4 py-2 text-xs font-bold rounded-xl transition-all disabled:opacity-50 ${
-              currentDecision === 'rejected'
-                ? 'bg-[#B80D1D] text-white shadow-sm'
-                : 'text-[#1A261C]/70 hover:bg-[#B80D1D]/10'
-            }`}
-          >
-            {savingDecision && currentDecision !== 'rejected' ? 'Saving...' : '✕ Reject'}
-          </button>
-        </div>
-      </div>
-
-      {/* Signal Alignment Chips */}
-      {candidate.family_results && (
-        <div className="space-y-1.5">
-          <span className="text-[10px] font-bold uppercase tracking-wider text-[#1A261C]/50">
-            Signal Family Alignment Audit
+          <span className="text-xs font-bold uppercase tracking-wider text-[#B80D1D]">
+            {candidate.match_level === 'possible' ? 'Possible match' : 'Match'} · {candidate.confidence} confidence
           </span>
-          <SignalChips families={candidate.family_results} />
+          <p className="text-xs text-[#1A261C]/70 mt-1">{candidate.method}</p>
         </div>
-      )}
-
-      {/* Side-by-Side Property Comparison Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-        {/* Left Card: Target Listing */}
-        <div className="bg-white rounded-3xl border border-[#F4EFEA] shadow-card overflow-hidden flex flex-col justify-between hover:border-[#B80D1D]/30 transition-all">
-          <div>
-            <div className="relative h-44 overflow-hidden">
-              <img src={listingImg} alt={listingTitle} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-[#1A261C] text-[#FAF8F5] font-bold text-xs shadow-md border border-[#1A261C]/50 flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                <span>Listed Subject</span>
-              </div>
-              <div className="absolute bottom-3 left-3 text-white">
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-black/40 backdrop-blur-md px-2 py-0.5 rounded">
-                  Target Listing
-                </span>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div>
-                <h4 className="font-display font-bold text-base text-[#1A261C]">{listingTitle}</h4>
-                <p className="text-xs text-[#1A261C]/60 flex items-center mt-1">📍 {listingAddress}</p>
-              </div>
-
-              <div className="flex items-baseline justify-between p-3 rounded-2xl bg-[#FAF8F5] border border-[#F4EFEA]">
-                <div>
-                  <span className="font-display text-2xl font-extrabold text-[#1A261C]">₹28,000</span>
-                  <span className="text-xs text-[#1A261C]/60"> / mo</span>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-[#B80D1D]/10 text-[#B80D1D] text-[11px] font-bold">
-                  Stated Rent
-                </span>
-              </div>
-
-              {/* Itemized Cost Table */}
-              <div className="pt-2 border-t border-[#F4EFEA] space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-dashed border-[#F4EFEA]">
-                  <span className="text-[#1A261C]/70">Maintenance Fee</span>
-                  <span className="font-semibold text-[#1A261C]">₹1,000</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-dashed border-[#F4EFEA]">
-                  <span className="text-[#1A261C]/70">Security Deposit</span>
-                  <span className="font-semibold text-[#1A261C]">₹56,000</span>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#F4EFEA] via-[#FAF8F5] to-[#F4EFEA] border border-[#E9DEC3] flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-bold text-[#B80D1D] uppercase tracking-wider block">Real Monthly Cost</span>
-                  <span className="text-xs text-[#1A261C]/60">All Included</span>
-                </div>
-                <div className="font-display text-xl font-extrabold text-[#B80D1D]">₹29,000</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Right Card: Matched Duplicate */}
-        <div className="bg-white rounded-3xl border border-[#F4EFEA] shadow-card overflow-hidden flex flex-col justify-between hover:border-[#B80D1D]/30 transition-all">
-          <div>
-            <div className="relative h-44 overflow-hidden">
-              <img src={candidateImg} alt={candidateTitle} className="w-full h-full object-cover" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-              <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-gradient-to-r from-[#B80D1D] to-[#8B0000] text-white font-bold text-xs shadow-md flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-amber-300 animate-ping" />
-                <span>Matched Portal</span>
-              </div>
-              <div className="absolute bottom-3 left-3 text-white">
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-black/40 backdrop-blur-md px-2 py-0.5 rounded">
-                  {candidate.source_platform || 'External Portal'}
-                </span>
-              </div>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div>
-                <h4 className="font-display font-bold text-base text-[#1A261C]">{candidateTitle}</h4>
-                <p className="text-xs text-[#1A261C]/60 flex items-center mt-1">📍 {candidateAddress}</p>
-              </div>
-
-              <div className="flex items-baseline justify-between p-3 rounded-2xl bg-[#FAF8F5] border border-[#F4EFEA]">
-                <div>
-                  <span className="font-display text-2xl font-extrabold text-[#1A261C]">₹24,000</span>
-                  <span className="text-xs text-[#1A261C]/60"> / mo</span>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-[11px] font-bold">
-                  ₹4,000 Cheaper
-                </span>
-              </div>
-
-              {/* Itemized Cost Table */}
-              <div className="pt-2 border-t border-[#F4EFEA] space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b border-dashed border-[#F4EFEA]">
-                  <span className="text-[#1A261C]/70">Maintenance Fee</span>
-                  <span className="font-semibold text-[#1A261C]">₹1,000</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-dashed border-[#F4EFEA]">
-                  <span className="text-[#1A261C]/70">Security Deposit</span>
-                  <span className="font-semibold text-[#1A261C]">₹48,000</span>
-                </div>
-              </div>
-
-              <div className="p-3.5 rounded-2xl bg-gradient-to-r from-[#F4EFEA] via-[#FAF8F5] to-[#F4EFEA] border border-[#E9DEC3] flex items-center justify-between">
-                <div>
-                  <span className="text-[10px] font-bold text-[#B80D1D] uppercase tracking-wider block">Real Monthly Cost</span>
-                  <span className="text-xs text-[#1A261C]/60">All Included</span>
-                </div>
-                <div className="font-display text-xl font-extrabold text-[#B80D1D]">₹25,000</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="p-5 pt-0">
-            {candidate.url && (
-              <button
-                type="button"
-                onClick={() => onOpenEvidence({ url: candidate.url, portal: candidate.source_platform } as any)}
-                className="w-full py-2.5 px-4 rounded-xl border border-[#B80D1D] text-[#B80D1D] hover:bg-[#B80D1D] hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2"
-              >
-                <span>View Full Listing Evidence</span>
-                <span>↗</span>
-              </button>
-            )}
-          </div>
+        <div className="flex gap-2">
+          <button disabled={saving} onClick={() => decide('confirmed')}
+            className={`px-4 py-2 text-xs font-bold rounded-xl border ${decision === 'confirmed' ? 'bg-[#1A261C] text-white' : 'border-[#F4EFEA]'}`}>
+            ✓ Confirm
+          </button>
+          <button disabled={saving} onClick={() => decide('rejected')}
+            className={`px-4 py-2 text-xs font-bold rounded-xl border ${decision === 'rejected' ? 'bg-[#B80D1D] text-white' : 'border-[#F4EFEA]'}`}>
+            Not the same
+          </button>
         </div>
       </div>
 
-      {candidate.price_gaps && candidate.price_gaps.length > 0 && (
-        <PriceGapBadge gaps={candidate.price_gaps} />
-      )}
+      <SignalChips families={candidate.families || []} />
 
-      {((listing as any)?.lat || candidate?.lat) && (
-        <MapPinsView
-          a={{ lat: ((listing as any)?.lat as any)?.value ?? (listing as any)?.lat ?? null, lng: ((listing as any)?.lng as any)?.value ?? (listing as any)?.lng ?? null }}
-          b={{ lat: candidate?.lat ?? null, lng: candidate?.lng ?? null }}
-          distanceM={candidate?.distance_m ?? null}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <Card label="This listing" l={listing} rent={gap?.rent_here ?? listing.rent_options?.[0]?.monthly_rent ?? null} />
+        <Card label="Other portal" l={there} rent={gap?.rent_there ?? there.rent_options?.[0]?.monthly_rent ?? null} />
+      </div>
+
+      <PriceGapBadge gaps={candidate.price_gaps || []} />
+
+      {candidate.alternative_explanations?.length > 0 && (
+        <div className="bg-[#F4EFEA]/40 border-l-4 border-[#1A261C] p-3 rounded-r-xl">
+          <span className="text-[10px] font-mono font-bold uppercase text-[#1A261C]">Other explanations</span>
+          <ul className="text-xs text-[#1A261C]/80 list-disc pl-4 mt-1 space-y-0.5">
+            {candidate.alternative_explanations.map((e: string, i: number) => <li key={i}>{e}</li>)}
+          </ul>
+        </div>
       )}
     </div>
   );
