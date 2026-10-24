@@ -1,0 +1,95 @@
+{
+  "report_id": "report_blocked",
+  "status": "partial",
+  "created_at": "2026-10-24T14:25:00Z",
+  "captured_at": "2026-10-24T14:25:00Z",
+  "is_cached": false,
+  "is_replay": true,
+  "replay_label": "Recorded run, 24 Oct 14:25",
+  "input_url": "https://99acres.com/pg-in-delhi-ncr-ffid",
+  "portal": "ninetynineacres",
+  "listing": {
+    "listing_id": "99acres_blocked",
+    "source": {
+      "url": "https://99acres.com/pg-in-delhi-ncr-ffid",
+      "portal": "ninetynineacres",
+      "captured_at": "2026-10-24T14:25:00Z",
+      "snapshot_id": "snap_005"
+    },
+    "portal": "ninetynineacres",
+    "status": "unknown",
+    "title": {"value": "Delhi PG Listing", "passage": "Delhi PG Listing"},
+    "operator_name": {"value": null, "passage": null},
+    "address_text": {"value": "Delhi", "passage": "Delhi"},
+    "locality": {"value": null, "passage": null},
+    "description": {"value": null, "passage": null},
+    "gender_policy": {"value": null, "passage": null},
+    "food_plan": {"value": null, "passage": null},
+    "furnishing": {"value": null, "passage": null},
+    "floor": {"value": null, "passage": null},
+    "lat": null,
+    "lng": null,
+    "rent_options": [],
+    "deposit_amount": {"value": null, "passage": null},
+    "deposit_months": {"value": null, "passage": null},
+    "maintenance_monthly": {"value": null, "passage": null},
+    "electricity_terms": {"value": null, "passage": null},
+    "electricity_monthly": {"value": null, "passage": null},
+    "ac_charge_monthly": {"value": null, "passage": null},
+    "food_charge_monthly": {"value": null, "passage": null},
+    "brokerage_amount": {"value": null, "passage": null},
+    "brokerage_months": {"value": null, "passage": null},
+    "notice_period_days": {"value": null, "passage": null},
+    "lock_in_months": {"value": null, "passage": null},
+    "amenities": [],
+    "photo_urls": [],
+    "posted_on": null
+  },
+  "matching": {
+    "status": "not_checked",
+    "candidates": [],
+    "portals_checked": [
+      {"portal": "ninetynineacres", "status": "blocked", "listings_seen": 0, "note": "99acres required bot verification and could not be fetched", "url": "https://99acres.com/pg-in-delhi-ncr-ffid"}
+    ],
+    "nearby_listings_count": 0,
+    "message": "Source portal blocked automated fetch."
+  },
+  "cost": {
+    "status": "rent_missing",
+    "rent_option_index": 0,
+    "sharing_type": null,
+    "lines": [],
+    "monthly_min": null,
+    "monthly_max": null,
+    "move_in_min": null,
+    "move_in_max": null,
+    "unknown_count": 0,
+    "headline": "Rent not available"
+  },
+  "fair_price": {
+    "status": "not_enough_data",
+    "comparable_count": 0,
+    "sharing_type": null,
+    "median_rent": null,
+    "listing_rent": null,
+    "position": null,
+    "message": "Could not compare price because listing data was blocked."
+  },
+  "questions": [
+    {
+      "question_id": "q1",
+      "text": "How many days after I leave is the deposit refunded?",
+      "finding_id": null,
+      "is_default": true
+    }
+  ],
+  "findings": [],
+  "modules": [
+    {"name": "listing", "status": "failed", "message": "Portal protected by security verification.", "next_step": "Try copying details directly or providing a direct link."},
+    {"name": "matching", "status": "not_checked", "message": "Skipped because initial fetch failed.", "next_step": null},
+    {"name": "cost", "status": "failed", "message": "Rent missing.", "next_step": null},
+    {"name": "fair_price", "status": "not_checked", "message": null, "next_step": null},
+    {"name": "questions", "status": "success", "message": null, "next_step": null}
+  ],
+  "share_path": "/report/report_blocked"
+}

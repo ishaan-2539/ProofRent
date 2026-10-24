@@ -1,0 +1,9 @@
+[
+  {"report_id": "report_hidden_fees", "type": "started", "ts": "2026-10-24T14:20:00Z", "message": "Starting investigation for Mathur PG House"},
+  {"report_id": "report_hidden_fees", "type": "module_ready", "ts": "2026-10-24T14:20:04Z", "message": "Extracted listing details", "module": "listing"},
+  {"report_id": "report_hidden_fees", "type": "module_ready", "ts": "2026-10-24T14:20:10Z", "message": "No duplicate listings detected", "module": "matching"},
+  {"report_id": "report_hidden_fees", "type": "module_ready", "ts": "2026-10-24T14:20:13Z", "message": "Identified mandatory food and maintenance fees", "module": "cost"},
+  {"report_id": "report_hidden_fees", "type": "module_ready", "ts": "2026-10-24T14:20:15Z", "message": "Compared local market prices", "module": "fair_price"},
+  {"report_id": "report_hidden_fees", "type": "module_ready", "ts": "2026-10-24T14:20:17Z", "message": "Generated targeted questions", "module": "questions"},
+  {"report_id": "report_hidden_fees", "type": "completed", "ts": "2026-10-24T14:20:18Z", "message": "Investigation complete"}
+]

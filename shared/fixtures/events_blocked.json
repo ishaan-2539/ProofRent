@@ -1,0 +1,6 @@
+[
+  {"report_id": "report_blocked", "type": "started", "ts": "2026-10-24T14:25:00Z", "message": "Starting investigation for 99acres link"},
+  {"report_id": "report_blocked", "type": "warning", "ts": "2026-10-24T14:25:05Z", "message": "Portal requested anti-bot verification"},
+  {"report_id": "report_blocked", "type": "module_ready", "ts": "2026-10-24T14:25:08Z", "message": "Failed to extract core listing data", "module": "listing"},
+  {"report_id": "report_blocked", "type": "failed", "ts": "2026-10-24T14:25:10Z", "message": "Investigation incomplete due to portal blocking"}
+]
