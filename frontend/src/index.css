@@ -18,6 +18,8 @@
 
   body {
     @apply bg-[#FAFAFC] text-[#1A261C] font-sans antialiased;
+    background-image: radial-gradient(#E9E4DC 1px, transparent 1px);
+    background-size: 22px 22px;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -49,6 +51,7 @@
   /* Hide non-essential web chrome */
   header,
   footer,
+  aside,
   button,
   .no-print,
   iframe {
@@ -57,6 +60,7 @@
 
   body {
     background: #ffffff !important;
+    background-image: none !important;
     color: #1a261c !important;
     font-size: 11pt !important;
   }

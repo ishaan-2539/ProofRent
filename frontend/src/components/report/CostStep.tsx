@@ -6,82 +6,89 @@ interface CostStepProps {
     title?: string;
     label?: string;
     name?: string;
-    amount_min?: number;
+    recurrence?: string;
+    amount_min?: number | null;
+    amount_max?: number | null;
     amount?: number;
+    display_value?: string | null;
     is_hidden_cost?: boolean;
     hidden?: boolean;
-    passage?: string;
-    assumption_text?: string;
-    question?: string;
+    passage?: string | null;
+    assumption_text?: string | null;
+    question?: string | null;
     note?: string;
-    source?: SourceRef;
+    source?: SourceRef | null;
   };
   onOpenEvidence?: (source: SourceRef) => void;
 }
+
+const fmt = (n: number) => `₹${Number(n).toLocaleString('en-IN')}`;
 
 export function CostStep({ item, onOpenEvidence }: CostStepProps) {
   if (!item) return null;
 
   const title = item.title || item.name || item.key || 'Expense Item';
-  const amount = item.amount_min ?? item.amount ?? 0;
-  
-  // Classify line label: Listed (verified on page), Assumed (derived rule), or Unknown (requires question)
+  const min = item.amount_min ?? item.amount ?? null;
+  const max = item.amount_max ?? null;
+
   const isAssumed = item.label === 'assumed' || item.is_hidden_cost || item.hidden;
-  const isUnknown = item.label === 'unknown' || (amount === 0 && !!item.question);
-  
-  const noteText = item.passage || item.assumption_text || item.note || item.question;
+  const isUnknown = item.label === 'unknown' || (min === null && !item.display_value);
+
+  let amountText: string;
+  if (item.display_value && min === null) {
+    amountText = item.display_value;
+  } else if (isUnknown || min === null) {
+    amountText = 'Unknown';
+  } else if (max !== null && max !== min) {
+    amountText = `${fmt(min)} – ${fmt(max)}`;
+  } else {
+    amountText = fmt(min);
+  }
+
+  const dot = isUnknown ? 'bg-slate-400' : isAssumed ? 'bg-amber-400' : 'bg-emerald-500';
+  const tag = isUnknown ? 'Unknown' : isAssumed ? 'Assumed' : 'Listed';
+  const recurrence =
+    item.recurrence === 'monthly' ? '/mo' : item.recurrence === 'one_time' ? 'one-time' : '';
+
+  const noteText = item.passage || item.assumption_text || item.note;
 
   return (
-    <div
-      className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${
-        isUnknown
-          ? 'bg-amber-50/60 border-amber-200/80'
-          : isAssumed
-          ? 'bg-[#B80D1D]/5 border-[#B80D1D]/30'
-          : 'bg-white border-[#F4EFEA] hover:border-[#1A261C]/20'
-      }`}
-    >
-      <div className="space-y-1">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs font-bold text-[#1A261C]">{title}</span>
-
-          {isUnknown ? (
-            <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full">
-              Unknown — Ask Landlord
-            </span>
-          ) : isAssumed ? (
-            <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-[#B80D1D] text-white px-2 py-0.5 rounded-full">
-              Assumed / Hidden Fee
-            </span>
-          ) : (
-            <span className="text-[9px] font-mono font-bold uppercase tracking-wider bg-[#1A261C] text-white px-2 py-0.5 rounded-full">
-              Verified Listed
-            </span>
+    <div className="py-3 space-y-1">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} title={tag} />
+          <span className="text-sm text-[#1A261C]/85 truncate">{title}</span>
+          <span className="text-[10px] font-mono uppercase tracking-wider text-[#1A261C]/40 shrink-0">
+            {tag}
+            {recurrence ? ` · ${recurrence}` : ''}
+          </span>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          {item.source && onOpenEvidence && (
+            <button
+              type="button"
+              onClick={() => onOpenEvidence(item.source!)}
+              className="text-[10px] font-mono font-bold text-[#B80D1D] hover:underline"
+            >
+              Proof ↗
+            </button>
           )}
-        </div>
-
-        {noteText && (
-          <p className="text-[11px] text-[#1A261C]/70 italic leading-relaxed">
-            "{noteText}"
-          </p>
-        )}
-      </div>
-
-      <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#F4EFEA]">
-        {item.source && onOpenEvidence && (
-          <button
-            type="button"
-            onClick={() => onOpenEvidence(item.source!)}
-            className="text-[10px] font-mono font-bold text-[#B80D1D] hover:underline"
+          <span
+            className={`text-sm font-bold ${isUnknown ? 'text-[#1A261C]/40' : 'text-[#1A261C]'}`}
           >
-            Proof ↗
-          </button>
-        )}
-
-        <div className="font-display text-sm font-extrabold text-[#1A261C]">
-          {isUnknown ? '₹ Range Pending' : `₹${Number(amount).toLocaleString('en-IN')}`}
+            {amountText}
+          </span>
         </div>
       </div>
+
+      {noteText && (
+        <p className="text-[11px] text-[#1A261C]/55 italic leading-relaxed pl-4">"{noteText}"</p>
+      )}
+      {isUnknown && item.question && (
+        <p className="text-[11px] text-amber-800 pl-4">
+          <span className="font-bold">Ask:</span> {item.question}
+        </p>
+      )}
     </div>
   );
 }
