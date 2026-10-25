@@ -39,3 +39,4 @@ backend/repomix-output.md
 !src/**/lib/
 !src/**/lib/**
 repomix-output.md
+.vscode
