@@ -18,7 +18,7 @@
 ![TinyFish](https://img.shields.io/badge/Powered_by-TinyFish_Web_Agent-B80D1D)
 ![HackIIITD](https://img.shields.io/badge/HackIIITD-2026-1A261C)
 
-**[Live demo](#-live-demo) · [How it works](#-how-it-works) · [Run it locally](#-run-it-locally) · [Team](#-team-noventra)**
+**[Team](#-team-noventra)**
 
 > *We never say scam. We say: show me the receipts.*
 
