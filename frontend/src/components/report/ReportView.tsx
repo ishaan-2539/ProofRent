@@ -8,6 +8,8 @@ import { QuestionsList } from './QuestionsList';
 import { EvidenceDrawer } from './EvidenceDrawer';
 import { ModuleBlock } from './ModuleBlock';
 import { ShareBar } from './ShareBar';
+import { FindingCard } from './FindingCard';
+import { ConfidenceExplainer } from './ConfidenceExplainer';
 import { formatCapturedAt, formatRupees } from '../../lib/format';
 import { getPortalName } from '../../lib/labels';
 
@@ -34,6 +36,7 @@ export function ReportView({ report, onRefetch }: ReportViewProps) {
   const costLadder = report.cost_ladder || report.cost || null;
   const fairPrice = report.fair_price || null;
   const questions = report.questions || [];
+  const findings: any[] = report.findings || [];
   const candidates: any[] = matching?.candidates || [];
 
   const handleOpenEvidence = (source: SourceRef) => {
@@ -145,7 +148,7 @@ export function ReportView({ report, onRefetch }: ReportViewProps) {
 
       {/* Listings + quick summary */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <RedStringView
             reportId={report.report_id || 'demo'}
             listing={listing}
@@ -153,6 +156,7 @@ export function ReportView({ report, onRefetch }: ReportViewProps) {
             onDecision={handleDecision}
             onOpenEvidence={handleOpenEvidence}
           />
+          {candidates.length > 0 && <ConfidenceExplainer candidate={candidates[0]} />}
         </div>
 
         <aside className="bg-white border border-[#F4EFEA] rounded-3xl p-6 shadow-luxury space-y-5">
@@ -215,6 +219,20 @@ export function ReportView({ report, onRefetch }: ReportViewProps) {
           </button>
         </aside>
       </div>
+
+      {/* Key findings */}
+      {findings.length > 0 && (
+        <ModuleBlock
+          title="Key Findings"
+          subtitle="Plain-language observations, each with its evidence and other possible explanations"
+        >
+          <div className="grid grid-cols-1 gap-4">
+            {findings.map((f) => (
+              <FindingCard key={f.finding_id} finding={f} onOpenEvidence={handleOpenEvidence} />
+            ))}
+          </div>
+        </ModuleBlock>
+      )}
 
       {/* Cost ladder + fair price */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
