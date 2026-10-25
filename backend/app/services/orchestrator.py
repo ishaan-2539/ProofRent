@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Awaitable, Callable, Optional
 from uuid import uuid4
 
@@ -25,6 +25,7 @@ from app.services.fair_price import compute_fair_price
 from app.services.findings import build_findings
 from app.services.jobs import get_manager
 from app.services.matching import find_matches
+from app.services.photos import find_page_images
 from app.services.portals import detect_portal, validate_listing_url
 from app.services.questions import build_questions
 
@@ -33,6 +34,7 @@ logger = logging.getLogger(__name__)
 _REPORTS_CACHE: dict[str, Report] = {}
 
 MIN_PAGE_CHARS = 100
+CACHE_TTL_MINUTES = 30  # an old run must never hide a fixed pipeline for long
 
 
 def sync_cached_report(report: Report) -> None:
@@ -51,14 +53,26 @@ def has_content(listing: Optional[ListingFields]) -> bool:
     )
 
 
+def _is_reusable(r: Report) -> bool:
+    """A cached report is reused only if it is complete, recent and actually searched other portals."""
+    if r.status != "completed" or not has_content(r.listing):
+        return False
+    if not r.matching or r.matching.status == "not_checked":
+        return False
+    created = r.created_at
+    if created.tzinfo is None:
+        created = created.replace(tzinfo=timezone.utc)
+    return datetime.now(timezone.utc) - created < timedelta(minutes=CACHE_TTL_MINUTES)
+
+
 def get_cached_report_by_url(url: str) -> Optional[Report]:
-    """Return a previous GOOD report for this URL. Empty/failed runs are never reused."""
+    """Return a previous GOOD, RECENT report for this URL."""
     candidates = [r for r in _REPORTS_CACHE.values() if r.input_url == url]
     db_report = repository.find_report_by_url(url)
     if db_report:
         candidates.append(db_report)
     for r in candidates:
-        if r.status == "completed" and has_content(r.listing):
+        if _is_reusable(r):
             return r
     return None
 
@@ -116,6 +130,26 @@ def _save_snapshot_safe(page: CapturedPage) -> None:
         page.snapshot_id = repository.save_snapshot(page)
     except Exception:
         logger.warning("Could not save snapshot for %s", page.url, exc_info=True)
+
+
+async def _ensure_photos(listing: ListingFields) -> None:
+    """If the page text had no usable photos, try reading og:image / <img> directly.
+    Best effort: failure just means the card shows a placeholder."""
+    if listing.photo_urls:
+        return
+    try:
+        urls = await find_page_images(listing.source.url)
+        if urls:
+            listing.photo_urls = urls
+    except Exception:
+        logger.info("Photo fallback failed for %s", listing.source.url, exc_info=True)
+
+
+async def _extract_candidate(page: CapturedPage) -> ListingFields:
+    listing = await extract_listing_fields(page)
+    if has_content(listing):
+        await _ensure_photos(listing)
+    return listing
 
 
 async def _fetch_candidate_pages(urls: list[str], report_id: str) -> list[CapturedPage]:
@@ -187,6 +221,8 @@ async def run_investigation(report_id: str, url: str) -> None:
     # ---- 2. Listing fields (LLM turns page text into fields, with quoted passages)
     async def task_listing():
         listing = await extract_listing_fields(captured)
+        if has_content(listing):
+            await _ensure_photos(listing)
         report.listing = listing
         state["listing"] = listing
         if not has_content(listing):
@@ -214,9 +250,28 @@ async def run_investigation(report_id: str, url: str) -> None:
 
         pages = await _fetch_candidate_pages(urls, report_id)
         results = await asyncio.gather(
-            *[extract_listing_fields(p) for p in pages], return_exceptions=True
+            *[_extract_candidate(p) for p in pages], return_exceptions=True
         )
-        candidates = [r for r in results if isinstance(r, ListingFields) and has_content(r)]
+
+        candidates: list[ListingFields] = []
+        for page, res in zip(pages, results):
+            if isinstance(res, Exception):
+                msg = getattr(res, "message", None) or str(res)
+                manager.emit(
+                    report_id,
+                    "warning",
+                    f"Could not extract details from {page.url}: {msg}",
+                    portal=page.portal,
+                )
+            elif has_content(res):
+                candidates.append(res)
+            else:
+                manager.emit(
+                    report_id,
+                    "warning",
+                    f"{page.url} was read but had no usable listing details.",
+                    portal=page.portal,
+                )
         state["candidates"] = candidates
 
         manager.emit(report_id, "step", f"Comparing with {len(candidates)} listing(s) from other portals...")
@@ -246,7 +301,6 @@ async def run_investigation(report_id: str, url: str) -> None:
             report.findings = build_findings(listing, report.matching, report.cost, report.fair_price)
             report.questions = build_questions(listing, report.findings, report.cost)
         else:
-            # Nothing was read, so only the three always-ask questions are shown.
             placeholder = ListingFields(
                 listing_id="unread",
                 source=SourceRef(url=url, portal=portal_id, captured_at=captured.captured_at),

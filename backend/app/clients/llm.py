@@ -10,6 +10,17 @@ from app.core.errors import ProofRentError
 
 logger = logging.getLogger(__name__)
 
+MAX_PARALLEL_LLM_CALLS = 2
+_semaphore: Optional[asyncio.Semaphore] = None
+
+
+def _get_semaphore() -> asyncio.Semaphore:
+    """At most 2 LLM calls at once, so extracting 6 pages doesn't trip rate limits."""
+    global _semaphore
+    if _semaphore is None:
+        _semaphore = asyncio.Semaphore(MAX_PARALLEL_LLM_CALLS)
+    return _semaphore
+
 
 def _parse_json(text: str) -> Dict[str, Any]:
     """Parse model output as JSON, tolerating ```json fences and stray prose."""
@@ -31,11 +42,24 @@ class LLMClient:
         self.api_key = settings.llm_api_key
         self.model = settings.llm_model
 
+    async def _dispatch(self, system_prompt: str, user_prompt: str) -> Dict[str, Any]:
+        if self.provider == "openai":
+            return await self._call_openai(system_prompt, user_prompt)
+        if self.provider == "anthropic":
+            return await self._call_anthropic(system_prompt, user_prompt)
+        if self.provider == "gemini":
+            return await self._call_gemini(system_prompt, user_prompt)
+        raise ProofRentError(
+            code="INTERNAL",
+            custom_message=f"Unsupported LLM_PROVIDER '{self.provider}'.",
+            next_step="Use gemini, openai or anthropic.",
+        )
+
     async def extract_json(
         self, system_prompt: str, user_prompt: str, json_schema: Dict[str, Any]
     ) -> Dict[str, Any]:
-        """Call the configured provider and return parsed JSON. One retry, then a
-        ProofRentError that CONTAINS the real reason (so it shows in the UI/log)."""
+        """Call the configured provider and return parsed JSON. Up to 3 attempts with
+        backoff on rate limits; the final error contains the real reason."""
         if not self.api_key:
             raise ProofRentError(
                 code="INTERNAL",
@@ -44,29 +68,28 @@ class LLMClient:
             )
 
         last_err = "unknown error"
-        for attempt in range(2):
+        attempts = 3
+        for attempt in range(attempts):
+            wait = 1.5
             try:
-                if self.provider == "openai":
-                    return await self._call_openai(system_prompt, user_prompt)
-                if self.provider == "anthropic":
-                    return await self._call_anthropic(system_prompt, user_prompt)
-                if self.provider == "gemini":
-                    return await self._call_gemini(system_prompt, user_prompt)
-                raise ProofRentError(
-                    code="INTERNAL",
-                    custom_message=f"Unsupported LLM_PROVIDER '{self.provider}'.",
-                    next_step="Use gemini, openai or anthropic.",
-                )
+                async with _get_semaphore():
+                    return await self._dispatch(system_prompt, user_prompt)
             except ProofRentError:
                 raise
             except httpx.HTTPStatusError as e:
+                code = e.response.status_code
                 body = e.response.text[:400].replace("\n", " ")
-                last_err = f"{self.provider} HTTP {e.response.status_code}: {body}"
+                last_err = f"{self.provider} HTTP {code}: {body}"
+                if code in (400, 401, 403, 404):
+                    logger.error("LLM request rejected, not retrying: %s", last_err)
+                    break  # wrong key / wrong model name: retrying cannot help
+                if code in (429, 500, 502, 503, 504):
+                    wait = 5.0 * (attempt + 1)
             except Exception as e:  # network, bad JSON, unexpected shape
                 last_err = f"{type(e).__name__}: {e}"
             logger.error("LLM attempt %s failed: %s", attempt + 1, last_err)
-            if attempt == 0:
-                await asyncio.sleep(1.5)
+            if attempt < attempts - 1:
+                await asyncio.sleep(wait)
 
         raise ProofRentError(
             code="INTERNAL",

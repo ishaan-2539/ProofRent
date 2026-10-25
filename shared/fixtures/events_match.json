@@ -1,1 +1,15 @@
-[]
+[
+  {"report_id": "report_match", "type": "started", "ts": "2026-10-24T15:54:22Z", "message": "Starting investigation of your magicbricks link.", "portal": "magicbricks"},
+  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T15:54:23Z", "message": "Reading the listing page with TinyFish...", "portal": "magicbricks"},
+  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T15:54:25Z", "message": "Read 4,812 characters via fetch. Extracting fields...", "portal": "magicbricks"},
+  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:28Z", "message": "listing ready.", "module": "listing"},
+  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T15:54:29Z", "message": "Searching other portals for the same place...", "module": "matching"},
+  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T15:54:33Z", "message": "Found 3 possible pages on other portals. Reading them...", "module": "matching"},
+  {"report_id": "report_match", "type": "warning", "ts": "2026-10-24T15:54:35Z", "message": "Not checked: one page could not be read (empty page).", "module": "matching"},
+  {"report_id": "report_match", "type": "step", "ts": "2026-10-24T15:54:38Z", "message": "Comparing with 2 listing(s) from other portals...", "module": "matching"},
+  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:40Z", "message": "matching ready.", "module": "matching"},
+  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:41Z", "message": "cost ready.", "module": "cost"},
+  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:42Z", "message": "fair_price ready.", "module": "fair_price"},
+  {"report_id": "report_match", "type": "module_ready", "ts": "2026-10-24T15:54:43Z", "message": "questions ready.", "module": "questions"},
+  {"report_id": "report_match", "type": "completed", "ts": "2026-10-24T15:54:44Z", "message": "Investigation finished. Report ready."}
+]

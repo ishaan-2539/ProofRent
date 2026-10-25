@@ -9,19 +9,19 @@ from app.services.portals import detect_portal
 
 logger = logging.getLogger(__name__)
 
-# Only keep URLs that are a SINGLE listing's detail page (search also returns
-# city/locality index pages that list dozens of PGs and would pollute matching).
+# Hints that a URL is a SINGLE listing page. They only RANK results: if a portal has no
+# URL matching its hints, we still try its best non-matching result rather than skipping it.
 DETAIL_HINTS: dict[str, tuple[str, ...]] = {
     "magicbricks": ("propertydetail",),
     "gopgo": ("/pg/",),
     "hexahome": ("-id-",),
-    "housing": ("/paying-guests/", "/pg/"),
+    "housing": ("/paying-guests/", "/pg/", "/rent/"),
     "nobroker": ("/property/", "/pg/"),
     "pgdekho": ("/pg/", "-pg-", "/hostel"),
 }
 
 MAX_URLS = 6            # the orchestrator reads at most 6 candidate pages
-MAX_PER_PORTAL = 2      # several entries from one portal must not crowd out the others
+MAX_PER_PORTAL = 2
 MAX_TARGETED_PORTALS = 4
 
 
@@ -66,11 +66,19 @@ def _canon_url(url: str) -> str:
     return url.split("#", 1)[0].rstrip("/")
 
 
-def _select_urls(by_portal: dict[str, list[str]]) -> list[str]:
-    """Round-robin across portals so every portal gets a chance before any gets a second slot."""
+def _select_urls(detail: dict[str, list[str]], fallback: dict[str, list[str]]) -> list[str]:
+    """Round-robin across portals so every portal gets a chance before any gets a second slot.
+    A portal with no detail-looking URL contributes its best other result instead."""
+    per_portal: dict[str, list[str]] = {}
+    for pid in set(detail) | set(fallback):
+        urls = list(detail.get(pid, []))
+        if not urls:
+            urls = list(fallback.get(pid, []))[:1]
+        per_portal[pid] = urls
+
     out: list[str] = []
     for round_idx in range(MAX_PER_PORTAL):
-        for urls in by_portal.values():
+        for urls in per_portal.values():
             if round_idx < len(urls) and len(out) < MAX_URLS:
                 out.append(urls[round_idx])
     return out
@@ -89,7 +97,8 @@ async def discover_candidate_urls(listing: ListingFields) -> tuple[list[str], li
             display[pid] = portal.get("display_name", pid)
             checks[pid] = PortalCheck(portal=pid, status="checked", listings_seen=0)
 
-    by_portal: dict[str, list[str]] = {}
+    detail: dict[str, list[str]] = {}
+    fallback: dict[str, list[str]] = {}
     seen_urls: set[str] = set()
     stats = {"ok": 0, "failed": 0}
 
@@ -102,13 +111,14 @@ async def discover_candidate_urls(listing: ListingFields) -> tuple[list[str], li
             stats["ok"] += 1
             for hit in res:
                 pid = detect_portal(hit.url)
-                if not pid or pid == listing.portal or not is_detail_page(hit.url, pid):
+                if not pid or pid == listing.portal:
                     continue
                 key = _canon_url(hit.url)
                 if key in seen_urls:
                     continue
                 seen_urls.add(key)
-                bucket = by_portal.setdefault(pid, [])
+
+                bucket = (detail if is_detail_page(hit.url, pid) else fallback).setdefault(pid, [])
                 if len(bucket) >= MAX_PER_PORTAL:
                     continue
                 bucket.append(hit.url)
@@ -116,7 +126,7 @@ async def discover_candidate_urls(listing: ListingFields) -> tuple[list[str], li
                     checks[pid].listings_seen += 1
                     checks[pid].url = checks[pid].url or hit.url
 
-    # Pass 1: general queries (original name + alternate spellings), run in parallel.
+    # Pass 1: general queries (original name + alternate spellings), in parallel.
     queries = build_search_queries(listing)
     absorb(await asyncio.gather(*[client.search(q) for q in queries[:4]], return_exceptions=True))
 
@@ -138,4 +148,4 @@ async def discover_candidate_urls(listing: ListingFields) -> tuple[list[str], li
             if c.listings_seen == 0:
                 c.note = "No matching listing page found in search results"
 
-    return _select_urls(by_portal), list(checks.values())
+    return _select_urls(detail, fallback), list(checks.values())

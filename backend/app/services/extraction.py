@@ -12,6 +12,7 @@ from app.schemas import (
     RentOption,
     SourceRef,
 )
+from app.services.photos import clean_image_urls
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,6 @@ INT_FIELDS = [
 ]
 ALL_FIELDS = STRING_FIELDS + INT_FIELDS
 
-# Kept for the contract / tests: nullable schema (type arrays would be HTTP 400 on TinyFish).
 EXTRACTION_SCHEMA: dict = {
     "type": "object",
     "properties": {
@@ -36,6 +36,7 @@ EXTRACTION_SCHEMA: dict = {
         **{f: {"type": "integer", "nullable": True} for f in INT_FIELDS},
         **{f"{f}_passage": {"type": "string", "nullable": True} for f in ALL_FIELDS},
         "amenities": {"type": "array", "items": {"type": "string"}},
+        "photo_urls": {"type": "array", "items": {"type": "string"}},
         "rent_options": {
             "type": "array",
             "items": {
@@ -54,7 +55,6 @@ EXTRACTION_SCHEMA: dict = {
 
 
 def _template() -> str:
-    """A literal JSON skeleton so the model uses EXACTLY our key names."""
     skeleton: dict = {}
     for f in STRING_FIELDS:
         skeleton[f] = None
@@ -63,6 +63,7 @@ def _template() -> str:
         skeleton[f] = None
         skeleton[f"{f}_passage"] = None
     skeleton["amenities"] = []
+    skeleton["photo_urls"] = []
     skeleton["rent_options"] = [
         {"sharing_type": "single|double|triple|quad|other", "ac": None,
          "monthly_rent": None, "per_bed_stated": None, "passage": None}
@@ -81,6 +82,7 @@ def build_extraction_prompt(page_text: str) -> Tuple[str, str]:
         "- If something is not on the page, leave it null (and its passage null). Never guess, "
         "never use 0 for 'unknown'.\n"
         "- Money fields are integers in rupees ('₹6,500' -> 6500, '8K' -> 8000).\n"
+        "- Extract photo/image URLs found on the page into photo_urls (copy them exactly).\n"
         "- 'Rent/Bed ₹6,500 onwards' with no sharing type: use sharing_type 'other'.\n"
         "- Sharing: single/private = 'single'; twin/2 sharing/double = 'double'; "
         "3 sharing/triple = 'triple'; 4 sharing = 'quad'.\n"
@@ -94,9 +96,32 @@ def build_extraction_prompt(page_text: str) -> Tuple[str, str]:
     return system_prompt, user_prompt
 
 
+# ------------------------------------------------------------------ photos
+_MD_IMG = re.compile(r"!\[[^\]]*\]\(\s*<?([^)\s>]+)")
+_HTML_IMG = re.compile(r"""<img[^>]+?(?:data-src|data-original|src)=["']([^"']+)["']""", re.I)
+_BARE_IMG = re.compile(
+    r"""https?://[^\s<>"'()\[\]]+\.(?:jpe?g|png|webp)(?:\?[^\s<>"'()\[\]]*)?""", re.I
+)
+
+
+def extract_photo_urls(page_text: str, base_url: Optional[str] = None) -> list[str]:
+    """Find listing photos in markdown / html text. Works with extension-less CDN links
+    when they appear as markdown images."""
+    if not page_text:
+        return []
+    found: list[str] = []
+    found += _MD_IMG.findall(page_text)
+    found += _HTML_IMG.findall(page_text)
+    found += _BARE_IMG.findall(page_text)
+    return clean_image_urls(found, base_url=base_url)
+
+
+# ------------------------------------------------------------------ verification
 def _norm(s: str) -> str:
-    """Case, whitespace and markdown-insensitive form used for passage checks."""
-    s = re.sub(r"[*#_`|>]", " ", s.lower())
+    """Lower-case, drop markdown links/punctuation so passages compare on words and digits only."""
+    s = (s or "").lower()
+    s = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", s)
+    s = re.sub(r"[^a-z0-9₹]+", " ", s)
     return " ".join(s.split())
 
 
@@ -106,36 +131,79 @@ def verify_passage(passage: Optional[str], page_text: str) -> bool:
     return _norm(passage) in _norm(page_text)
 
 
+def _number_in_page(n: Any, page_plain: str) -> bool:
+    try:
+        n = int(n)
+    except (TypeError, ValueError):
+        return False
+    if re.search(rf"(?<!\d){n}(?!\d)", page_plain):
+        return True
+    if n >= 1000 and n % 1000 == 0 and re.search(rf"(?<!\d){n // 1000}\s?k\b", page_plain, re.I):
+        return True
+    return False
+
+
 def drop_unverified(listing: ListingFields, page_text: str) -> ListingFields:
-    """A value whose quoted passage is not in the page text is dropped (becomes Unknown)."""
+    """Keep a value only if it demonstrably appears on the page.
+
+    1. its quoted passage is on the page, or
+    2. (text fields) the value itself is on the page, or
+    3. (number fields) the number is on the page.
+    """
+    page_norm = _norm(page_text)
+    page_plain = page_text.replace(",", "")
+
     for field_name in ALL_FIELDS:
         ev: ExtractedValue = getattr(listing, field_name)
-        if ev.value is not None and not verify_passage(ev.passage, page_text):
-            logger.info("Dropping unverified field %s (passage %r not in page)", field_name, ev.passage)
+        if ev.value is None:
+            continue
+        if ev.passage and _norm(ev.passage) in page_norm:
+            continue
+
+        keep = False
+        if field_name in STRING_FIELDS:
+            v = _norm(str(ev.value))
+            keep = bool(v) and v in page_norm
+        else:
+            keep = _number_in_page(ev.value, page_plain)
+
+        if keep:
+            setattr(listing, field_name, ExtractedValue(value=ev.value, passage=None))
+        else:
+            logger.info("Dropping unverified field %s (value %r)", field_name, ev.value)
             setattr(listing, field_name, ExtractedValue(value=None, passage=None))
 
     valid = []
     for option in listing.rent_options:
-        if option.passage and not verify_passage(option.passage, page_text):
+        if option.passage and _norm(option.passage) in page_norm:
+            valid.append(option)
+        elif option.monthly_rent and _number_in_page(option.monthly_rent, page_plain):
+            option.passage = None
+            valid.append(option)
+        else:
             logger.info("Dropping unverified rent option %s", option)
-            continue
-        valid.append(option)
     listing.rent_options = valid
     return listing
 
 
 def merge_listing_fields(base: ListingFields, extra: ListingFields) -> ListingFields:
-    for field_name in ALL_FIELDS:
-        if getattr(base, field_name).value is None and getattr(extra, field_name).value is not None:
-            setattr(base, field_name, getattr(extra, field_name))
-    if not base.rent_options and extra.rent_options:
-        base.rent_options = extra.rent_options
-    if not base.amenities and extra.amenities:
-        base.amenities = extra.amenities
-    return base
+    """Fill gaps in `base` with values from `extra`. Existing values always win."""
+    merged = base.model_copy(deep=True)
+    for f in ALL_FIELDS:
+        if getattr(merged, f).value is None and getattr(extra, f).value is not None:
+            setattr(merged, f, getattr(extra, f).model_copy(deep=True))
+    if not merged.rent_options and extra.rent_options:
+        merged.rent_options = [o.model_copy(deep=True) for o in extra.rent_options]
+    merged.amenities = list(dict.fromkeys(merged.amenities + extra.amenities))
+    merged.photo_urls = list(dict.fromkeys(merged.photo_urls + extra.photo_urls))
+    if merged.lat is None:
+        merged.lat = extra.lat
+    if merged.lng is None:
+        merged.lng = extra.lng
+    return merged
 
 
-# ------------------------------------------------------------------ coercion helpers
+# ------------------------------------------------------------------ converters
 def to_int(v: Any) -> Optional[int]:
     if v is None or isinstance(v, bool):
         return None
@@ -186,7 +254,7 @@ def _make_ev(data: dict, key: str) -> ExtractedValue:
     if key in INT_FIELDS:
         n = to_int(raw)
         if n is not None and key == "notice_period_days" and "month" in str(raw).lower():
-            n *= 30  # '1 Month' -> 30 days
+            n *= 30
         return ExtractedValue(value=n, passage=passage) if n is not None else ExtractedValue()
     return ExtractedValue(value=str(raw), passage=passage)
 
@@ -197,7 +265,10 @@ def _stable_id(url: str) -> str:
 
 async def extract_listing_fields(page: CapturedPage) -> ListingFields:
     source = SourceRef(
-        url=page.url, portal=page.portal, captured_at=page.captured_at, snapshot_id=page.snapshot_id
+        url=page.url,
+        portal=page.portal,
+        captured_at=page.captured_at,
+        snapshot_id=page.snapshot_id,
     )
     base = ListingFields(
         listing_id=_stable_id(page.url),
@@ -210,7 +281,6 @@ async def extract_listing_fields(page: CapturedPage) -> ListingFields:
 
     llm = get_llm_client()
     sys_prompt, user_prompt = build_extraction_prompt(page.text)
-    # Errors propagate on purpose: run_module shows the real reason in the UI.
     data = await llm.extract_json(sys_prompt, user_prompt, EXTRACTION_SCHEMA)
 
     rent_opts = []
@@ -232,6 +302,11 @@ async def extract_listing_fields(page: CapturedPage) -> ListingFields:
 
     amenities = [str(a) for a in (data.get("amenities") or []) if a]
 
+    # Photos: regex over the page first; model-supplied URLs only if they really appear on the page.
+    regex_photos = extract_photo_urls(page.text, page.url)
+    llm_photos = [str(p) for p in (data.get("photo_urls") or []) if p and str(p) in page.text]
+    photos = clean_image_urls(regex_photos + llm_photos, base_url=page.url)
+
     listing = ListingFields(
         listing_id=base.listing_id,
         source=source,
@@ -239,6 +314,7 @@ async def extract_listing_fields(page: CapturedPage) -> ListingFields:
         status="live",
         rent_options=rent_opts,
         amenities=amenities,
+        photo_urls=photos,
         **{f: _make_ev(data, f) for f in ALL_FIELDS},
     )
     return drop_unverified(listing, page.text)
